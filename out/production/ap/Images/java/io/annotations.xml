@@ -1,0 +1,7 @@
+<root>
+    <item name='java.io.File boolean mkdirs()'>
+        <annotation name='org.jetbrains.annotations.Contract'>
+            <val name="pure" val="true"/>
+        </annotation>
+    </item>
+</root>
