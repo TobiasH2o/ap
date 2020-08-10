@@ -51,7 +51,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
     private int heading = 0;
     private String[] productCode = new String[0];
     private final SuggestionField sf = new SuggestionField(productCode, frame);
-    private boolean loading = false;
+    private final boolean loading = false;
     private Product[] products = new Product[0];// Contains all products available
 
     public ContractInterface(String filePath) {
@@ -352,18 +352,15 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
 
     public void updateEngineers(String[] engineers) {
         engineer.removeAllItems();
-        loading = true;
         engineer.addItem("NEW ENGINEER");
         for (String e : engineers) {
             engineer.addItem(e);
         }
         engineer.setSelectedIndex(0);
-        loading = false;
     }
 
     public void setContractDetails(FullContract fc) {
         heading = 0;
-        loading = true;
         entries.clear();
         ID.clear();
         desc.clear();
@@ -414,7 +411,6 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         while (heading > 0) prevHeading.doClick();
         showMenu();
         Log.logLine("Finished Loading");
-        loading = false;
     }
 
     private void setEngi(String engy) {
