@@ -189,33 +189,34 @@ public class Printer implements Printable, ActionListener {
 
         for (int i = sPos[pi];i < sPos[pi + 1];i++) {
             if (printDetails.get(i).length == 1) {// If it is one long it is a subHeading
-                if(i != 0)
-                {
+                if (i != 0) {
                     int costPosition = 0;
-                    for(int q = 0; q < costs.length; q++){
+                    for (int q = 0;q < costs.length;q++) {
                         Log.logLine(i);
-                        if(costs[q][1].equals(""+i)){
+                        if (costs[q][1].equals("" + i)) {
                             costPosition = q;
                             break;
                         }
                     }
-                    g2.setFont(basicFont);
-                    double width = (1 - widthSize[sumTable]) * pf.getImageableWidth();
-                    if (sumTable < widthSize.length - 1)
-                        width = (widthSize[sumTable + 1] - widthSize[sumTable]) * pf.getImageableWidth();
-                    g2.setColor(new Color(255, 255, 255));
-                    g2.fillRect((int) (widthSize[sumTable] * pf.getImageableWidth()) -
-                                (g2.getFontMetrics().stringWidth(sumName) + 5), (int) cSize,
-                                (int) (width + (g2.getFontMetrics().stringWidth(sumName) + 5)),
-                                g2.getFontMetrics().getHeight() * 2);
-                    g2.setColor(new Color(0, 0, 0, 255));
-                    g2.drawRect((int) (widthSize[sumTable] * pf.getImageableWidth()), (int) cSize - 5, (int) width,
-                                g2.getFontMetrics().getHeight() * 2);
-                    g2.drawString(sumName, (int) (widthSize[sumTable] * pf.getImageableWidth()) -
-                                           (g2.getFontMetrics().stringWidth(sumName) + 5),
-                                  (int) (cSize - 5 + (g2.getFontMetrics().getHeight() * 1.5)));
-                    g2.drawString(costs[costPosition][0], (int) (widthSize[sumTable] * pf.getImageableWidth() + 5),
-                                  (int) (cSize - 5 + (g2.getFontMetrics().getHeight() * 1.5)));
+                    if (sumTable > 0) {
+                        g2.setFont(basicFont);
+                        double width = (1 - widthSize[sumTable]) * pf.getImageableWidth();
+                        if (sumTable < widthSize.length - 1)
+                            width = (widthSize[sumTable + 1] - widthSize[sumTable]) * pf.getImageableWidth();
+                        g2.setColor(new Color(255, 255, 255));
+                        g2.fillRect((int) (widthSize[sumTable] * pf.getImageableWidth()) -
+                                    (g2.getFontMetrics().stringWidth(sumName) + 5), (int) cSize,
+                                    (int) (width + (g2.getFontMetrics().stringWidth(sumName) + 5)),
+                                    g2.getFontMetrics().getHeight() * 2);
+                        g2.setColor(new Color(0, 0, 0, 255));
+                        g2.drawRect((int) (widthSize[sumTable] * pf.getImageableWidth()), (int) cSize - 5, (int) width,
+                                    g2.getFontMetrics().getHeight() * 2);
+                        g2.drawString(sumName, (int) (widthSize[sumTable] * pf.getImageableWidth()) -
+                                               (g2.getFontMetrics().stringWidth(sumName) + 5),
+                                      (int) (cSize - 5 + (g2.getFontMetrics().getHeight() * 1.5)));
+                        g2.drawString(costs[costPosition][0], (int) (widthSize[sumTable] * pf.getImageableWidth() + 5),
+                                      (int) (cSize - 5 + (g2.getFontMetrics().getHeight() * 1.5)));
+                    }
                 }
                 headingCount++;
                 g2.setFont(subHeading);
@@ -281,32 +282,33 @@ public class Printer implements Printable, ActionListener {
                     g2.drawString(sumName, (int) (widthSize[sumTable] * pf.getImageableWidth()) -
                                            (g2.getFontMetrics().stringWidth(sumName) + 5),
                                   (int) (cSize - 5 + (g2.getFontMetrics().getHeight() * 1.5)));
-                    g2.drawString(costs[costs.length-2][0], (int) (widthSize[sumTable] * pf.getImageableWidth() + 5),
+                    g2.drawString(costs[costs.length - 2][0], (int) (widthSize[sumTable] * pf.getImageableWidth() + 5),
                                   (int) (cSize - 5 + (g2.getFontMetrics().getHeight() * 1.5)));
 
                     cSize += (lineBuffer * 2);
-                    cSize +=
-                            Math.max(g.getFontMetrics(subHeading).getHeight(), g.getFontMetrics(basicFont).getHeight() * 2);
+                    cSize += Math.max(g.getFontMetrics(subHeading).getHeight(),
+                                      g.getFontMetrics(basicFont).getHeight() * 2);
 
+
+                    g2.setFont(basicFont);
+
+                    width = (1 - widthSize[sumTable]) * pf.getImageableWidth();
+                    if (sumTable < widthSize.length - 1)
+                        width = (widthSize[sumTable + 1] - widthSize[sumTable]) * pf.getImageableWidth();
+                    g2.setColor(new Color(255, 255, 255));
+                    g2.fillRect((int) (widthSize[sumTable] * pf.getImageableWidth()) -
+                                (g2.getFontMetrics().stringWidth(sumName) + 5), (int) cSize,
+                                (int) (width + (g2.getFontMetrics().stringWidth(sumName) + 5)),
+                                g2.getFontMetrics().getHeight() * 2);
+                    g2.setColor(new Color(0, 0, 0, 255));
+                    g2.drawRect((int) (widthSize[sumTable] * pf.getImageableWidth()), (int) cSize - 5, (int) width,
+                                g2.getFontMetrics().getHeight() * 2);
+                    g2.drawString("Total " + sumName, (int) (widthSize[sumTable] * pf.getImageableWidth()) -
+                                                      (g2.getFontMetrics().stringWidth("Total " + sumName) + 5),
+                                  (int) (cSize - 5 + (g2.getFontMetrics().getHeight() * 1.5)));
+                    g2.drawString(costs[costs.length - 1][0], (int) (widthSize[sumTable] * pf.getImageableWidth() + 5),
+                                  (int) (cSize - 5 + (g2.getFontMetrics().getHeight() * 1.5)));
                 }
-
-                g2.setFont(basicFont);
-                double width = (1 - widthSize[sumTable]) * pf.getImageableWidth();
-                if (sumTable < widthSize.length - 1)
-                    width = (widthSize[sumTable + 1] - widthSize[sumTable]) * pf.getImageableWidth();
-                g2.setColor(new Color(255, 255, 255));
-                g2.fillRect((int) (widthSize[sumTable] * pf.getImageableWidth()) -
-                            (g2.getFontMetrics().stringWidth(sumName) + 5), (int) cSize,
-                            (int) (width + (g2.getFontMetrics().stringWidth(sumName) + 5)),
-                            g2.getFontMetrics().getHeight() * 2);
-                g2.setColor(new Color(0, 0, 0, 255));
-                g2.drawRect((int) (widthSize[sumTable] * pf.getImageableWidth()), (int) cSize - 5, (int) width,
-                            g2.getFontMetrics().getHeight() * 2);
-                g2.drawString("Total " + sumName, (int) (widthSize[sumTable] * pf.getImageableWidth()) -
-                                       (g2.getFontMetrics().stringWidth("Total " + sumName) + 5),
-                              (int) (cSize - 5 + (g2.getFontMetrics().getHeight() * 1.5)));
-                g2.drawString(costs[costs.length-1][0], (int) (widthSize[sumTable] * pf.getImageableWidth() + 5),
-                              (int) (cSize - 5 + (g2.getFontMetrics().getHeight() * 1.5)));
 
             }
 
@@ -360,34 +362,30 @@ public class Printer implements Printable, ActionListener {
         }
         sPos.add(printDetails.size());
         this.sPos = sPos.toArray(new Integer[]{});
-        costs = new String[headingCount+1][];
+        costs = new String[headingCount + 1][];
         int costCounter = -1;
         BigDecimal summnation = new BigDecimal("0");
-        for(int i = 0; i < printDetails.size(); i++){
-            if(printDetails.get(i).length == 1){
-                if(costCounter >= 0){
+        for (int i = 0;i < printDetails.size();i++) {
+            if (printDetails.get(i).length == 1) {
+                if (costCounter >= 0) {
                     costs[costCounter] = new String[]{"", "" + i};
-                    if(sumType.equals("MONEY"))
-                        costs[costCounter][0] = fixCost(summnation.toString());
-                    else
-                        costs[costCounter][0] = summnation.toString();
+                    if (sumType.equals("MONEY")) costs[costCounter][0] = fixCost(summnation.toString());
+                    else costs[costCounter][0] = summnation.toString();
                     summnation = BigDecimal.ZERO;
                 }
                 costCounter++;
-            }else
-            if(isNumeric(printDetails.get(i)[sumTable].replaceAll("£", "").replaceAll(",","")))
-                summnation = summnation.add(getIfNumeric(printDetails.get(i)[sumTable].replaceAll("£", "").replaceAll(",",
-                                                                                                               "")));
+            } else if (sumTable > -1)
+                if (isNumeric(printDetails.get(i)[sumTable].replaceAll("£", "").replaceAll(",", ""))) summnation =
+                        summnation.add(getIfNumeric(
+                                printDetails.get(i)[sumTable].replaceAll("£", "").replaceAll(",", "")));
         }
         costs[costCounter] = new String[]{""};
-        if(sumType.equals("MONEY"))
-            costs[costCounter][0] = fixCost(summnation.toString());
-        else
-            costs[costCounter][0] = summnation.toString();
+        if (sumType.equals("MONEY")) costs[costCounter][0] = fixCost(summnation.toString());
+        else costs[costCounter][0] = summnation.toString();
         summnation = summnation.negate();
         costCounter++;
-        for (int i = 0; i < costs.length-1; i++) {
-            summnation = summnation.add(new BigDecimal(costs[i][0].replaceAll("£", "").replaceAll(",","").trim()));
+        for (int i = 0;i < costs.length - 1;i++) {
+            summnation = summnation.add(new BigDecimal(costs[i][0].replaceAll("£", "").replaceAll(",", "").trim()));
         }
         costs[costCounter] = new String[]{""};
         costs[costCounter][0] = fixCost(summnation.toString());

@@ -231,9 +231,10 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         String oDate;
         if (fm.readFile("Data/SyncDate.txt").length > 0) {
             oDate = fm.readFile("Data/SyncDate.txt")[0];
-            if (getDayDiff(oDate) > 25) JOptionPane
+            if (getDayDiff(oDate) > 10) JOptionPane
                     .showMessageDialog(this, "ALERT: Your database is " + getDayDiff(oDate) + " days out of date.");
-        } else {
+        } else {JOptionPane
+                .showMessageDialog(this, "ALERT: Your database is empty. Please sync it with the central database");
             fm.saveFile("Data/SyncDate.txt", new String[]{"0001/01/01"});
         }
 
@@ -300,7 +301,6 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         SQLInterface.setDetails(ip, username, password);
         for (String table : tables) {
             updateLoadBar("Loading " + table);
-            Log.logLine("Loading file" + table);
             // Uses file manager to save results provided by static SQL interface
             String[][] data = sql.fetchEntireTable(table);
             if (data != null) {
@@ -557,7 +557,10 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         Log.logLine("Window Closing");
         if (e.getSource().equals(ContractInterface.frame)) {
             Log.logLine("Loading built contract");
+            ContractInterface.frame.setVisible(false);
             fullContract = ci.getContract();
+            if(serverFound)
+                syncWithServer();
             Log.logLine("");
         }
     }

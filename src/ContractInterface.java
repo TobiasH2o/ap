@@ -352,11 +352,13 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
 
     public void updateEngineers(String[] engineers) {
         engineer.removeAllItems();
+        loading = true;
         engineer.addItem("NEW ENGINEER");
         for (String e : engineers) {
             engineer.addItem(e);
         }
         engineer.setSelectedIndex(0);
+        loading = false;
     }
 
     public void setContractDetails(FullContract fc) {
