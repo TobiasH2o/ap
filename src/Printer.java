@@ -485,13 +485,15 @@ public class Printer implements Printable, ActionListener {
 
         cSize += 5 + g2.getFontMetrics().getHeight();
 
-        g2.drawString("Date of Contract: " + fc.details.contractDate,
+        g2.drawString("Date of Contract: " + fc.details.contractDate.format(DateTimeFormatter.ofPattern("dd-MM" +
+                                                                                                        "-yyyy")),
                       (int) pf.getImageableWidth() - 5 - g2.getFontMetrics().stringWidth(longestEntry),
                       (int) cSize + 5 + g2.getFontMetrics().getHeight());
 
         cSize += 5 + g2.getFontMetrics().getHeight();
 
-        g2.drawString("Date of delivery: " + fc.details.deliveryDate,
+        g2.drawString("Date of delivery: " + fc.details.deliveryDate.format(DateTimeFormatter.ofPattern("dd-MM" +
+                                                                                                        "-yyyy")),
                       (int) pf.getImageableWidth() - 5 - g2.getFontMetrics().stringWidth(longestEntry),
                       (int) cSize + 5 + g2.getFontMetrics().getHeight());
 

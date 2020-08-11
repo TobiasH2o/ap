@@ -5,6 +5,9 @@ import components.Qproduct;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.DosFileAttributes;
 import java.util.ArrayList;
 
 public class FileManager {
@@ -20,26 +23,20 @@ public class FileManager {
         File f = new File(filePath);
         if (!f.exists() || !f.isDirectory()) {
             Log.logLine("Making Directory " + f.getName());
-            if (f.mkdirs())
-            Log.logLine("Created Directory " + f.getName());
-            else
-                Log.logLine("Failed Directory " + f.getName());
+            if (f.mkdirs()) hideFile(f);
+            else Log.logLine("Failed Directory " + f.getName());
         }
         File f1 = new File(filePath + "\\Data\\");
         File f2 = new File(filePath + "\\Tables\\");
         if (!f1.exists() || !f1.isDirectory()) {
             Log.logLine("Making Directory " + f1.getName());
-            if (f1.mkdirs())
-            Log.logLine("Created Directory " + f1.getName());
-            else
-                Log.logLine("Failed Directory " + f1.getName());
+            if (f1.mkdirs()) hideFile(f);
+            else Log.logLine("Failed Directory " + f1.getName());
         }
         if (!f2.exists() || !f2.isDirectory()) {
             Log.logLine("Making Directory " + f2.getName());
-            if (f2.mkdirs())
-            Log.logLine("Created Directory " + f2.getName());
-            else
-                Log.logLine("Failed Directory " + f2.getName());
+            if (f2.mkdirs()) hideFile(f);
+            else Log.logLine("Failed Directory " + f2.getName());
         }
     }
 
@@ -48,25 +45,40 @@ public class FileManager {
     }
 
     public static void checkFile(String filePath) {
-        if(!filePath.endsWith(".txt"))
-            filePath += ".txt";
+        if (!filePath.endsWith(".txt")) filePath += ".txt";
         File f = new File(filePath);
         Log.logLine("Checking file " + filePath);
         if (!f.exists()) {
             Log.logLine("Can't discover file");
             try {
-                if (f.createNewFile()) Log.logLine("Created file");
-                else Log.logLine("Can't create new file");
+                if (f.createNewFile()) hideFile(f);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
+    static private void hideFile(File file) {
+        try {
+            // execute attrib command to set hide attribute
+            Process p = Runtime.getRuntime().exec("attrib +H " + file.getPath());
+            // for removing hide attribute
+            //Process p = Runtime.getRuntime().exec("attrib -H " + file.getPath());
+            p.waitFor();
+            if(file.isHidden()) {
+                System.out.println(file.getName() + " hidden attribute is set to true");
+            }else {
+                System.out.println(file.getName() + " hidden attribute not set to true");
+            }
+        } catch (IOException | InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
     public void saveFile(String file, String[][] data) {
         try {
-            if(!file.endsWith(".txt"))
-                file += ".txt";
+            if (!file.endsWith(".txt")) file += ".txt";
             File f;
             f = new File(filePath + "\\" + file);
             Log.logLine("Saving data to " + f);
@@ -105,8 +117,7 @@ public class FileManager {
 
     public void saveFile(String file, String[] data) {
         try {
-            if(!file.endsWith(".txt"))
-                file += ".txt";
+            if (!file.endsWith(".txt")) file += ".txt";
             File f = new File(filePath + "\\" + file);
             Log.logLine("Saving data to " + f);
             fw = new FileWriter(f);
@@ -123,8 +134,7 @@ public class FileManager {
     public String[] readFile(String file) {
         File f;
         try {
-            if(!file.endsWith(".txt"))
-                file += ".txt";
+            if (!file.endsWith(".txt")) file += ".txt";
             checkFile(filePath + "\\" + file);
             f = new File(filePath + "\\" + file);
             Log.logLine("Reading data from " + f);
@@ -191,13 +201,13 @@ public class FileManager {
 
             if (file.exists()) file.delete();
             file.createNewFile();
+
             ArrayList<String> tempArr = new ArrayList<>(0);
             ArrayList<String[]> saveValue = new ArrayList<>(0);
-            saveValue.add(new String[]{contract.details.contractID, "" + contract.details.contractDate,
-                    contract.details.companyName, contract.details.address1, contract.details.address2,
-                    contract.details.address3, contract.details.postcode, contract.details.deliveryMethod,
-                    "" + contract.details.deliveryDate, "" + contract.details.quote, "" + contract.details.issued,
-                    contract.details.engineer});
+            saveValue.add(new String[]{contract.details.contractID, "" +
+                                                                    contract.details.contractDate, contract.details.companyName, contract.details.address1, contract.details.address2, contract.details.address3, contract.details.postcode, contract.details.deliveryMethod,
+                    "" + contract.details.deliveryDate,
+                    "" + contract.details.quote, "" + contract.details.issued, contract.details.engineer});
 
             for (ContractHeading ch : contract.contractHeadings) {
                 tempArr.add(ch.headingID + "%50" + ch.contractID + "%50" + ch.headingTitle);
@@ -214,7 +224,7 @@ public class FileManager {
             }
             saveValue.add(tempArr.toArray(String[]::new));
             tempArr.clear();
-            for (Qproduct q : contract.qProducts){
+            for (Qproduct q : contract.qProducts) {
                 tempArr.add(q.qID + "%50" + q.headingLineID + "%50" + q.cost + "%50" + q.type);
             }
             saveValue.add(tempArr.toArray(String[]::new));

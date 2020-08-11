@@ -355,6 +355,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         for (String e : engineers) {
             engineer.addItem(e);
         }
+        if(engineers.length == 0) engineer.addItem("OTHER");
         engineer.setSelectedIndex(0);
     }
 
