@@ -230,9 +230,14 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd");
         String oDate;
         if (fm.readFile("Data/SyncDate.txt").length > 0) {
-            oDate = fm.readFile("Data/SyncDate.txt")[0];
-            if (getDayDiff(oDate) > 10) JOptionPane
-                    .showMessageDialog(this, "ALERT: Your database is " + getDayDiff(oDate) + " days out of date.");
+            oDate = fm.readFile("Data/SyncDate.txt")[0].replaceAll("~~", "");
+            Log.logLine(oDate);
+            if (getDayDiff(oDate) > 7){ JOptionPane
+                    .showMessageDialog(this, "ALERT: It has been " + getDayDiff(oDate) +" days since you were last " +
+                                                                                       "online. Please resync with " +
+                                                                                       "the database.");
+                fm.deleteDir(filePath);
+            }
         } else {JOptionPane
                 .showMessageDialog(this, "ALERT: Your database is empty. Please sync it with the central database");
             fm.saveFile("Data/SyncDate.txt", new String[]{"0001/01/01"});
@@ -402,7 +407,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                         serverFound = false;
                         resetLoadBar("CRITICAL ERROR", 1);
                         updateLoadBar();
-                        JOptionPane.showMessageDialog(this, serverIP.split("-")[1], "CRITICAL FAILURE",
+                        JOptionPane.showMessageDialog(this, serverIP, "CRITICAL FAILURE",
                                                       JOptionPane.ERROR_MESSAGE);
                         ci.setOffline(true);
                     } else {
