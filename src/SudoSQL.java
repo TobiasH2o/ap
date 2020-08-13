@@ -78,7 +78,6 @@ public class SudoSQL {
         FileManager.checkFile(f.getPath());
         for(String line : new FileManager(filePath).readFile("\\Tables\\qProduct.txt")){
             String[] data = line.split("~~");
-            Log.logLine("QProduct cost: " + Convert.getIfNumeric(data[2]));
             qproducts.add(new Qproduct((int) Convert.getIfNumeric(data[0]), (int) Convert.getIfNumeric(data[1]),
                                        Convert.getIfNumeric(data[2]),
                           data[3]));

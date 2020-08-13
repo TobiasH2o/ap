@@ -43,10 +43,24 @@ public class Contract {
         this.address3 = "";
         this.postcode = "";
         this.deliveryMethod = "";
-        this.deliveryDate = null;
+        this.deliveryDate = LocalDate.of(1000, 1, 1);
         this.engineer = "OTHER";
-        this.quote = true;
+        this.quote = false;
         this.issued = false;
     }
 
+    public void clear() {
+        this.contractID = "";
+        this.contractDate = LocalDate.now();
+        this.companyName = "";
+        this.address1 = "";
+        this.address2 = "";
+        this.address3 = "";
+        this.postcode = "";
+        this.deliveryMethod = "";
+        this.deliveryDate = LocalDate.of(1000, 1, 1);
+        this.engineer = "OTHER";
+        this.quote = false;
+        this.issued = false;
+    }
 }

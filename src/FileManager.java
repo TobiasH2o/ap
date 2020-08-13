@@ -5,9 +5,6 @@ import components.Qproduct;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.DosFileAttributes;
 import java.util.ArrayList;
 
 public class FileManager {
@@ -16,10 +13,10 @@ public class FileManager {
     BufferedWriter bw;
     InputStreamReader fr;
     BufferedReader br;
-    String filePath;
+    public static String filePath;
 
-    FileManager(String filePath) {
-        this.filePath = filePath;
+    public FileManager(String filePath) {
+        FileManager.filePath = filePath;
         File f = new File(filePath);
         if (!f.exists() || !f.isDirectory()) {
             Log.logLine("Making Directory " + f.getName());
@@ -28,21 +25,22 @@ public class FileManager {
         }
         File f1 = new File(filePath + "\\Data\\");
         File f2 = new File(filePath + "\\Tables\\");
+        File f3 = new File(filePath + "\\Data\\Contracts\\");
         if (!f1.exists() || !f1.isDirectory()) {
             Log.logLine("Making Directory " + f1.getName());
-            if (f1.mkdirs()) hideFile(f);
-            else Log.logLine("Failed Directory " + f1.getName());
+            f1.mkdirs();
         }
         if (!f2.exists() || !f2.isDirectory()) {
             Log.logLine("Making Directory " + f2.getName());
-            if (f2.mkdirs()) hideFile(f);
-            else Log.logLine("Failed Directory " + f2.getName());
+            f2.mkdirs();
+        }
+        if (!f3.exists() || !f3.isDirectory()) {
+            Log.logLine("Making Directory " + f3.getName());
+            f3.mkdirs();
         }
     }
 
-    public FileManager() {
-        this.filePath = "C:\\";
-    }
+    public FileManager() {}
 
     public static void checkFile(String filePath) {
         if (!filePath.endsWith(".txt")) filePath += ".txt";
@@ -51,7 +49,7 @@ public class FileManager {
         if (!f.exists()) {
             Log.logLine("Can't discover file");
             try {
-                if (f.createNewFile()) hideFile(f);
+                f.createNewFile();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -235,5 +233,18 @@ public class FileManager {
             e.printStackTrace();
         }
 
+    }
+
+    public boolean deleteDir(String filePath) {
+        File f = new File(filePath);
+        return _deleteDir(f);
+    }
+
+    private boolean _deleteDir(File f){
+        File[] allContent = f.listFiles();
+        if(allContent != null)
+            for(File f1 : allContent)
+                _deleteDir(f1);
+            return f.delete();
     }
 }

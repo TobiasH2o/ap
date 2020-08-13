@@ -22,7 +22,7 @@ public class SuggestionField implements DocumentListener, KeyListener, FocusList
     ArrayList<JTextField> boxes = new ArrayList<>(0);
 
     boolean grabbingFocus = false;
-    boolean leaving = false;
+    boolean sticky = false;
 
     int selectedBox = -1;
     int selectedEntry = 0;
@@ -90,8 +90,7 @@ public class SuggestionField implements DocumentListener, KeyListener, FocusList
         suggestionPanel.revalidate();
         suggestionFrame.revalidate();
         Point possition = new Point(boxes.get(selectedBox).getLocationOnScreen().x,
-                                    boxes.get(selectedBox).getLocationOnScreen().y +
-                                    boxes.get(selectedBox).getHeight());
+                boxes.get(selectedBox).getLocationOnScreen().y + boxes.get(selectedBox).getHeight());
         suggestionFrame.setLocation(possition);
         suggestionFrame.repaint();
         suggestionFrame.setVisible(true);
@@ -113,6 +112,7 @@ public class SuggestionField implements DocumentListener, KeyListener, FocusList
             e.removeKeyListener(this);
             e.getDocument().removeDocumentListener(this);
         }
+        suggestionFrame.setVisible(false);
         boxes.clear();
     }
 
@@ -121,8 +121,11 @@ public class SuggestionField implements DocumentListener, KeyListener, FocusList
         updateSuggestions();
         updateDisplay();
         selectedEntry = 0;
-        boxes.get(selectedBox).grabFocus();
-        leaving = false;
+        if (selectedBox > -1) {
+            boxes.get(selectedBox).grabFocus();
+            sticky = true;
+        }
+
     }
 
     @Override
@@ -130,8 +133,10 @@ public class SuggestionField implements DocumentListener, KeyListener, FocusList
         updateSuggestions();
         updateDisplay();
         selectedEntry = 0;
-        boxes.get(selectedBox).grabFocus();
-        leaving = false;
+        if (selectedBox > -1) {
+            boxes.get(selectedBox).grabFocus();
+            sticky = true;
+        }
     }
 
     @Override
@@ -162,30 +167,31 @@ public class SuggestionField implements DocumentListener, KeyListener, FocusList
                 if (!(displayValues.get(selectedEntry).equals("----") && boxes.get(selectedBox).getText().isEmpty()))
                     boxes.get(selectedBox).setText(displayValues.get(selectedEntry));
                 suggestionFrame.setVisible(false);
-                leaving = true;
+                sticky = false;
                 break;
 
-            case 9:
             case 13:
             case 27:
-                if(displayValues.size() < selectedEntry)
-                if (!displayValues.get(selectedEntry).equals("----")) for (String i : values) {
-                    if (boxes.get(selectedBox).getText().equalsIgnoreCase(i)) {
-                        boxes.get(selectedBox).setText(boxes.get(selectedBox).getText().toUpperCase());
-                        break;
+                suggestionFrame.setVisible(false);
+                if (selectedEntry >= 0 && selectedEntry < displayValues.size()) {
+                    if (!displayValues.get(selectedEntry).equals("----")) {
+                        boxes.get(selectedBox).setText(displayValues.get(selectedEntry));
+                        for (String i : values) {
+                            if (boxes.get(selectedBox).getText().equalsIgnoreCase(i)) {
+                                boxes.get(selectedBox).setText(boxes.get(selectedBox).getText().toUpperCase());
+                                break;
+                            }
+                        }
                     }
                 }
-                else;
-                suggestionFrame.setVisible(false);
-                leaving = true;
+                sticky = false;
                 break;
 
             default:
                 //                Log.logLine(ID);
                 break;
         }
-
-        boxes.get(selectedBox).grabFocus();
+        if (selectedBox != -1) boxes.get(selectedBox).grabFocus();
     }
 
     @Override
@@ -216,9 +222,9 @@ public class SuggestionField implements DocumentListener, KeyListener, FocusList
                     break;
                 }
             }
-            displaySize = (int) ((gd.getDisplayMode().getWidth() - boxes.get(selectedBox).getLocationOnScreen().y -
-                                  boxes.get(selectedBox).getHeight()) /
-                                 boxes.get(selectedBox).getFontMetrics(boxes.get(selectedBox).getFont()).getHeight());
+            displaySize = (gd.getDisplayMode().getWidth() - boxes.get(selectedBox).getLocationOnScreen().y -
+                           boxes.get(selectedBox).getHeight()) /
+                          boxes.get(selectedBox).getFontMetrics(boxes.get(selectedBox).getFont()).getHeight();
         } else {
             Log.logLine("Grabbed Focus");
             grabbingFocus = false;
@@ -227,21 +233,30 @@ public class SuggestionField implements DocumentListener, KeyListener, FocusList
     }
 
     public void apply() {
-        if (!boxes.get(selectedBox).getText().isEmpty())
-            if (!displayValues.get(selectedEntry).equals("----")) for (String i : values) {
-                if (boxes.get(selectedBox).getText().toUpperCase().equals(i)) {
-                    boxes.get(selectedBox).setText(boxes.get(selectedBox).getText().toUpperCase());
-                    break;
+        Log.logLine("Checking entry");
+        suggestionFrame.setVisible(false);
+        updateSuggestions();
+        Log.logLine("Updated suggestions");
+        if (selectedBox != -1) if (selectedEntry >= 0 && selectedEntry < displayValues.size()) {
+            if (!displayValues.get(selectedEntry).equals("----")) {
+                boxes.get(selectedBox).setText(displayValues.get(selectedEntry));
+                for (String i : values) {
+                    if (boxes.get(selectedBox).getText().equalsIgnoreCase(i)) {
+                        Log.logLine("Set Values");
+                        boxes.get(selectedBox).setText(boxes.get(selectedBox).getText().toUpperCase());
+                        break;
+                    }
                 }
             }
-        leaving = true;
-        suggestionFrame.setVisible(false);
+        }
+        selectedBox = -1;
+        sticky = false;
     }
 
     @Override
     public void focusLost(FocusEvent e) {
         Log.logLine("Focus Lost");
-        if (!leaving) {
+        if (sticky) {
             grabbingFocus = true;
             boxes.get(selectedBox).grabFocus();
             Log.logLine("Grabbing Focus");

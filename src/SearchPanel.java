@@ -6,12 +6,17 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 public class SearchPanel extends JPanel implements ActionListener, DocumentListener {
 
     public final JFrame frame = new JFrame();
     private final JTextField searchTerm = new JTextField();
-    private final JButton[] displayItems = new JButton[18];
+    private final Container north = new Container();
+    private final JComboBox searchTypes =
+            new JComboBox(new String[]{"Contract Number", "Company Name", "Date of contract", "Postcode"});
+    private final JButton[] displayItems = new JButton[10];
     private String contractID = "";
     private boolean selectedFile = false;
     private int position = 0;
@@ -22,7 +27,7 @@ public class SearchPanel extends JPanel implements ActionListener, DocumentListe
 
         frame.add(this);
         frame.setVisible(false);
-        frame.setSize(400, 900);
+        frame.setSize(400, 450);
 
         Container centerPanel = new Container();
         centerPanel.setLayout(new GridLayout(displayItems.length, 1));
@@ -40,8 +45,12 @@ public class SearchPanel extends JPanel implements ActionListener, DocumentListe
         JButton next = new JButton(">>>>>>");
         southPanel.add(next);
 
+        north.setLayout(new GridLayout(1, 2));
+        north.add(searchTerm);
+        north.add(searchTypes);
+
         this.setLayout(new BorderLayout());
-        this.add(searchTerm, BorderLayout.NORTH);
+        this.add(north, BorderLayout.NORTH);
         this.add(centerPanel, BorderLayout.CENTER);
         this.add(southPanel, BorderLayout.SOUTH);
 
@@ -72,11 +81,15 @@ public class SearchPanel extends JPanel implements ActionListener, DocumentListe
         dataSet = getFilteredData();
         for (int i = 0;i < displayItems.length;i++) {
             if (dataSet[i] != null) {
-                if (dataSet[i].contractID.toUpperCase().trim().startsWith("Q")) {
+                if (dataSet[i].quote) {
                     String string = dataSet[i].contractID;
-                    displayItems[i].setText("Quote:  " + string.replace("Q", "") + " - " + dataSet[i].contractDate);
+                    displayItems[i].setText("<html>Quote: " + string.replace("Q", "") + " - " +
+                                            dataSet[i].contractDate.format(DateTimeFormatter.ofPattern("dd-MM-yyy")) +
+                                            "<br>" + dataSet[i].companyName + " - " + dataSet[i].postcode + "</html>");
                 } else {
-                    displayItems[i].setText("Contract:  " + dataSet[i].contractID + " - " + dataSet[i].contractDate);
+                    displayItems[i].setText("<html>Contract: " + dataSet[i].contractID + " - " +
+                                            dataSet[i].contractDate.format(DateTimeFormatter.ofPattern("dd-MM-yyy")) +
+                                            "<br>" + dataSet[i].companyName + " - " + dataSet[i].postcode + "</html>");
                 }
                 displayItems[i].setActionCommand("B:" + dataSet[i].contractID);
             } else {
@@ -108,10 +121,29 @@ public class SearchPanel extends JPanel implements ActionListener, DocumentListe
         int localPosition = position;
         Contract[] returnValue = new Contract[displayItems.length];
         while (count < displayItems.length && localPosition < dataSet.length) {
-            if ((dataSet[localPosition].contractID.trim().startsWith(searchTerm.getText()) ||
-                 searchTerm.getText().equals(""))) {
-                returnValue[count] = dataSet[localPosition];
-                count++;
+            if (Objects.equals(searchTypes.getSelectedItem(), "Contract Number")) {
+                if (dataSet[localPosition].contractID.toUpperCase().trim().startsWith(searchTerm.getText().toUpperCase().trim()) ||
+                    searchTerm.getText().equals("")) {
+                    returnValue[count] = dataSet[localPosition];
+                    count++;
+                }
+            } else if (Objects.equals(searchTypes.getSelectedItem(), "Company Name")) {
+                if (dataSet[localPosition].companyName.trim().toUpperCase().startsWith(searchTerm.getText().toUpperCase().trim()) ||
+                    searchTerm.getText().equals("")) {
+                    returnValue[count] = dataSet[localPosition];
+                    count++;
+                }
+            } else if (Objects.equals(searchTypes.getSelectedItem(), "Date of Contract")) {
+                if (dataSet[localPosition].contractDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy")).toUpperCase()
+                            .startsWith(searchTerm.getText().trim().toUpperCase()) || searchTerm.getText().equals("")) {
+                    returnValue[count] = dataSet[localPosition];
+                    count++;
+                }
+            }else if(Objects.equals(searchTypes.getSelectedItem(), "Postcode")){
+                if(dataSet[localPosition].postcode.trim().toUpperCase().startsWith(searchTerm.getText().trim().toUpperCase()) || searchTerm.getText().isEmpty()){
+                    returnValue[count] = dataSet[localPosition];
+                    count++;
+                }
             }
             localPosition++;
         }
@@ -177,10 +209,13 @@ public class SearchPanel extends JPanel implements ActionListener, DocumentListe
 
     @Override
     public void removeUpdate(DocumentEvent e) {
-
+        position = 0;
+        redraw();
     }
 
     @Override
     public void changedUpdate(DocumentEvent e) {
+        position = 0;
+        redraw();
     }
 }

@@ -2,7 +2,10 @@ import components.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.awt.print.PrinterJob;
 import java.io.File;
@@ -17,6 +20,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.stream.Stream;
 
+import static javax.swing.BoxLayout.Y_AXIS;
+
 public class UI extends JPanel implements ActionListener, WindowListener {
 
     private static final int port = 3306;
@@ -24,7 +29,6 @@ public class UI extends JPanel implements ActionListener, WindowListener {
     // List of available tables in the database to be stored locally
     private final static String[] tables =
             new String[]{"altFilter", "beltGuard", "bin", "broughtOut", "broughtOutPaB", "cefFilter", "contract", "contractHeading", "controlBoxes", "cyclone", "dustUnit", "engineer", "erectionAndTransport", "fan", "filter", "headingLine", "hood", "impellor", "labourCost", "material", "materialCost", "oAndS", "pipeOrBend", "product", "pulleyBlastGate", "qProduct", "rawMatCost", "rotaryAndTwoWayValves", "silo", "soundEnclosure", "sprayBooth"};
-    private final JFrame bulkUploadFrame = new JFrame("Upload Access dumps");
     private final Container southBox = new Container();
     private final HintTextField usernameBox = new HintTextField("Username");
     private final HintTextField passwordBox = new HintTextField("Password");
@@ -48,23 +52,22 @@ public class UI extends JPanel implements ActionListener, WindowListener {
     private final Printer printer;
     private final JDialog makeIssued;
     private final String filePath;
+    // Builds and views contracts, Must be handed Contract by parent
+    private final ContractInterface ci;
+    private final HintTextField deliveryMethod = new HintTextField("Delivery Method");
     JDialog dateDialog = new JDialog();
     DatePicker dp = new DatePicker();
-    // Builds and views contracts, Must be handed Contract by parent
-    private ContractInterface ci;
     private FullContract fullContract = new FullContract();
     private String ip = "";
     private Contract[] contracts;
     private ContractHeading[] contractHeadings;
     private HeadingLine[] headingLines;
     private Product[] products;
-    private String[] engineers;
     private Qproduct[] qProducts;
     private boolean serverFound = false;
     private double loadingBarMaxValue = 1;
     private double loadingBarCurValue = 1;
     private String loadingBarTxtValue = "Sync to begin";
-    private HintTextField deliveryMethod = new HintTextField("Delivery Method");
     private String username = "";
     private String password = "";
 
@@ -113,11 +116,14 @@ public class UI extends JPanel implements ActionListener, WindowListener {
 
             InputStream in = p.getInputStream();
             byte[] b = new byte[in.available()];
-            in.read(b);
-            in.close();
+            if (in.read(b) == 0) myDocuments = JOptionPane.showInputDialog(this,
+                    "A fatal error has occurred. \n Please" + " " + "provide your " + "documents folder.");
+            else {
 
-            myDocuments = new String(b);
-            myDocuments = myDocuments.split("\\s\\s+")[4];
+                myDocuments = new String(b);
+                myDocuments = myDocuments.split("\\s\\s+")[4];
+            }
+            in.close();
 
             Log.logLine(myDocuments);
 
@@ -130,7 +136,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         filePath = myDocuments + "\\apData";
 
         fm = new FileManager(filePath);
-        ci = new ContractInterface(filePath);
+        ci = new ContractInterface();
 
         logo = fm.loadImage("/Images/Logo.png");
         printer = new Printer(fm.loadImage("/Images/PrinterLogo.png"), frame);
@@ -139,6 +145,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         ContractInterface.frame.addWindowListener(this);
 
         submit.addActionListener(this);
+        //noinspection SpellCheckingInspection
         submit.setActionCommand("initialsync");
         submit.setFocusPainted(false);
 
@@ -156,6 +163,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
 
         JButton syncWithServer = new JButton("Sync");
         syncWithServer.addActionListener(this);
+        //noinspection SpellCheckingInspection
         syncWithServer.setActionCommand("serversync");
 
         JButton uploadDataButton = new JButton("Upload File");
@@ -172,7 +180,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         northBox.add(makeContract);
         northBox.add(printInterface);
 
-        // Disables program functionality untill it has loaded local data sources
+        // Disables program functionality until it has loaded local data sources
         usernameBox.setEnabled(false);
         passwordBox.setEnabled(false);
         searchContract.setEnabled(false);
@@ -191,6 +199,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         this.setBackground(new Color(31, 24, 94));
 
         JPanel buPanel = new JPanel();
+        JFrame bulkUploadFrame = new JFrame("Upload Access dumps");
         bulkUploadFrame.add(buPanel);
         bulkUploadFrame.setLocationRelativeTo(getParent());
         bulkUploadFrame.setSize(200, 100);
@@ -227,19 +236,19 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         repaint();
 
 
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd");
         String oDate;
         if (fm.readFile("Data/SyncDate.txt").length > 0) {
             oDate = fm.readFile("Data/SyncDate.txt")[0].replaceAll("~~", "");
             Log.logLine(oDate);
-            if (getDayDiff(oDate) > 7){ JOptionPane
-                    .showMessageDialog(this, "ALERT: It has been " + getDayDiff(oDate) +" days since you were last " +
-                                                                                       "online. Please resync with " +
-                                                                                       "the database.");
+            if (getDayDiff(oDate) > 7) {
+                JOptionPane.showMessageDialog(this,
+                        "ALERT: It has been " + getDayDiff(oDate) + " days since you were last " +
+                        "online. Please sync with the database.");
                 fm.deleteDir(filePath);
             }
-        } else {JOptionPane
-                .showMessageDialog(this, "ALERT: Your database is empty. Please sync it with the central database");
+        } else {
+            JOptionPane
+                    .showMessageDialog(this, "ALERT: Your database is empty. Please sync it with the central database");
             fm.saveFile("Data/SyncDate.txt", new String[]{"0001/01/01"});
         }
 
@@ -255,7 +264,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         if (loadingBarCurValue > 0) {
             g2.setColor(new Color(16, 110, 18));
             g2.fillRect(5, this.getHeight() - southBox.getHeight() - 20,
-                        (int) ((this.getWidth() - 10) * loadingBarCurValue / loadingBarMaxValue), 15);
+                    (int) ((this.getWidth() - 10) * loadingBarCurValue / loadingBarMaxValue), 15);
         }
         g2.setColor(Color.WHITE);
         g2.drawString(loadingBarTxtValue, 10, this.getHeight() - southBox.getHeight() - 7);
@@ -268,11 +277,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
     }
 
     private void uploadData() {
-
         ArrayList<String[]> entries = new ArrayList<>(0);
-        String[] priority = new String[]{"E",// Engineer
-                "EC" //Editing a Contract
-        };
         URI f;
         try {
 
@@ -280,21 +285,143 @@ public class UI extends JPanel implements ActionListener, WindowListener {
             FileManager.checkFile(f.getPath());
             Object[] lines;
             lines = Files.lines(Paths.get(f)).toArray();
+            resetLoadBar("Uploading engineers", lines.length);
             for (Object line : lines) {// Loads all data into an array
                 String ln = "" + line;
-                Log.logLine("(BufferedUpload)-" + ln);
+                Log.logLine(ln);
                 entries.add(ln.split(":"));
             }
-            for (String type : priority)// Used to cycle for each item in priority
-                for (String[] entry : entries) // Checks each value
-                    if ("E".equals(type) && entry[0].equals(type)) sql.addEngineer(entry[1]);
+            for (String[] entry : entries) { // Checks each value
+                sql.addEngineer(entry[1]);
+                updateLoadBar();
+            }
 
-            fm.saveFile("\\Data\\uploadBuffer.txt", new String[]{"(UPLOAD:BUFFER)"});
+            fm.saveFile("\\Data\\uploadBuffer.txt", new String[]{});
 
+            File[] contracts = new File(filePath + "\\Data\\Contracts\\").listFiles();
+            if (contracts != null && contracts.length > 0) {
+                JCheckBox[] contractBoxes = new JCheckBox[contracts.length];
+                for (int i = 0;i < contracts.length;i++)
+                    contractBoxes[i] = new JCheckBox(contracts[i].getName());
+
+                JPanel selectionPanel = new JPanel();
+                selectionPanel.setLayout(new BoxLayout(selectionPanel, Y_AXIS));
+                JScrollPane scrollPane = new JScrollPane(selectionPanel);
+                selectionPanel.add(new JLabel("Select contracts to save to the server."));
+                for (JCheckBox jCheckBox : contractBoxes)
+                    selectionPanel.add(jCheckBox);
+
+                JOptionPane.showMessageDialog(this, scrollPane);
+
+                for (int i = 0;i < contracts.length;i++) {
+                    Log.logLine(contractBoxes[i].isSelected() + " - " + contracts[i].getName());
+                }
+
+                StringBuilder results = new StringBuilder("Result:");
+
+                for (int i = 0;i < contracts.length;i++)
+                    if (contractBoxes[i].isSelected()) results.append(uploadContract(contracts[i]));
+                if (results.length() != 7)
+                    JOptionPane.showMessageDialog(this, results, "Server Sync Report", JOptionPane.INFORMATION_MESSAGE);
+            }
         } catch (IOException ioException) {
             ioException.printStackTrace();
         }
 
+    }
+
+    private String uploadContract(File contract) {
+        try {
+            FullContract fc;
+            updateLoadBar("Loading Contract " + contract.getName(), 1);
+            fc = loadContract(contract);
+            if (sql.contractExists(fc.details.contractID)) {
+                if (JOptionPane.showOptionDialog(this, "Contract " + fc.fullContractID() +
+                                                       " could not be uploaded as a duplicate ID is on the database.\n You can instead amend the contract. This will overwrite the current contract on the server and can not be undone.",
+                        "Amend Contract?", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null,
+                        new String[]{"Amend", "Cancel"}, "") == 0) {
+                    updateLoadBar("Amending Contract " + contract.getName(), 1);
+                    sql.reuploadContract(fc);
+                    updateLoadBar("Removing Contract " + contract.getName(), 1);
+                    fm.deleteDir(contract.getAbsolutePath());
+                    return "\n[PASSED]-" + contract.getName();
+                }
+            } else {
+                updateLoadBar("Uploading Contract " + contract.getName(), 1);
+                sql.pushContract(fc);
+                updateLoadBar("Removing Contract " + contract.getName(), 1);
+                fm.deleteDir(contract.getAbsolutePath());
+                return "\n[PASSED]-" + contract.getName();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "\n[FAILED]-" + contract.getName();
+        }
+        return "";
+    }
+
+    private FullContract loadContract(File contract) throws Exception {
+        FullContract fullContract = new FullContract();
+        String[] data = fm.readFile(contract);
+        String[] cDetails = data[0].split("~~");
+
+        Contract c = new Contract();
+        c.contractID = cDetails[0];
+        c.contractDate = Convert.getIfDate(cDetails[1]);
+        c.companyName = cDetails[2];
+        c.address1 = cDetails[3];
+        c.address2 = cDetails[4];
+        c.address3 = cDetails[5];
+        c.postcode = cDetails[6];
+        c.deliveryMethod = cDetails[7];
+        c.deliveryDate = Convert.getIfDate(cDetails[8]);
+        c.quote = Convert.getBoolean(cDetails[9]);
+        c.issued = Convert.getBoolean(cDetails[10]);
+        c.engineer = cDetails[11];
+        fullContract.setDetails(c);
+
+        String[] heading = data[1].split("~~");
+        String[] headingLine = data[2].split("~~");
+        String[] qProducts = data[3].split("~~");
+        ArrayList<ContractHeading> contractHeading = new ArrayList<>(0);
+        ArrayList<HeadingLine> contractHeadingLine = new ArrayList<>(0);
+        ArrayList<Product> products = new ArrayList<>(0);
+        ArrayList<Qproduct> qproducts = new ArrayList<>(0);
+
+        for (String s : heading) {
+            contractHeading.add(new ContractHeading((int) Convert.getIfNumeric(s.split("%50")[0]), s.split("%50")[1],
+                    s.split("%50")[2]));
+        }
+
+        for (String s : headingLine) {
+            Log.logLine(s.split("%50"));
+            contractHeadingLine.add(new HeadingLine((int) Convert.getIfNumeric(s.split("%50")[0]),
+                    (int) Convert.getIfNumeric(s.split("%50")[1]), s.split("%50")[2], s.split("%50")[3],
+                    (int) Convert.getIfNumeric(s.split("%50")[4])));
+        }
+
+
+        for (HeadingLine head : contractHeadingLine) {
+            for (Product prod : this.products) {
+                if (head.productID.equalsIgnoreCase(prod.productID)) {
+                    products.add(prod);
+                }
+            }
+        }
+
+        for (String s : qProducts) {
+            qproducts.add(new Qproduct((int) Convert.getIfNumeric(s.split("%50")[0]),
+                    (int) Convert.getIfNumeric(s.split("%50")[1]), Convert.getIfNumeric(s.split("%50")[2]),
+                    s.split("%50")[3]));
+        }
+
+
+        fullContract.contractHeadings = contractHeading;
+        fullContract.contractHeadingLine = contractHeadingLine;
+        fullContract.products = products;
+        fullContract.qProducts = qproducts;
+
+        return fullContract;
     }
 
     private boolean syncWithServer() {
@@ -391,7 +518,6 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                     // Sets the button to assume it failed to connect
                     submit.setText("Go Online");
                     this.remove(southBox);
-                    uploadData();
                     if (syncWithServer()) {
                         // Only runs if it succeeded to sync with the server data
                         this.add(southBox, BorderLayout.SOUTH);
@@ -407,12 +533,12 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                         serverFound = false;
                         resetLoadBar("CRITICAL ERROR", 1);
                         updateLoadBar();
-                        JOptionPane.showMessageDialog(this, serverIP, "CRITICAL FAILURE",
-                                                      JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(this, serverIP, "CRITICAL FAILURE", JOptionPane.ERROR_MESSAGE);
                         ci.setOffline(true);
                     } else {
                         // Sets the program into online mode and triggers the button to sync with server
                         // Sets the IP to be the valid IP returned by the server
+                        //noinspection SpellCheckingInspection
                         ip = "jdbc:mysql://" + serverIP + ":" + port + "/apdb";
                         SQLInterface.IP = ip;
                         SQLInterface.PASSWORD = password;
@@ -437,10 +563,12 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                 ci.setContractDetails(fullContract);
                 break;
 
+            //noinspection SpellCheckingInspection
             case "serversync":
                 syncWithServer();
                 break;
 
+            //noinspection SpellCheckingInspection
             case "initialsync":
                 // Enables some of the programs functionality
                 usernameBox.setEnabled(true);
@@ -463,7 +591,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                         LocalDate.parse(dp.getSelectedDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                 fullContract.details.deliveryMethod = deliveryMethod.getText();
                 sql.setContractDate(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
-                                    fullContract.details.contractID);
+                        fullContract.details.contractID);
                 sql.issueContract(fullContract.details.contractID);
                 sql.setDeliveryDate(fullContract.details.deliveryDate, fullContract.details.contractID);
                 sql.setDeliveryMethod(fullContract.details.deliveryMethod, fullContract.details.contractID);
@@ -479,9 +607,12 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                 if (event.split(",")[1].equalsIgnoreCase("issue")) {
                     if (serverFound) {
                         if (ci.getContract().details.issued) JOptionPane
-                                .showMessageDialog(this, "This contract has already been issued.",
-                                                   "DUPLICATE " + "ISSUE", JOptionPane.WARNING_MESSAGE);
-                        dateDialog.setVisible(true);
+                                .showMessageDialog(this, "This contract has already been issued.", "DUPLICATE ISSUE",
+                                        JOptionPane.WARNING_MESSAGE);
+                        else if (ci.getContract().details.quote) JOptionPane
+                                .showMessageDialog(this, "Can not issue a quote.", "QUOTE ISSUE",
+                                        JOptionPane.WARNING_MESSAGE);
+                        else dateDialog.setVisible(true);
                     } else JOptionPane.showMessageDialog(this, "You can not issue a Contract while offline.");
                 } else {
                     printer.updateContract(ci.getContract());
@@ -496,14 +627,6 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                 Log.logLine("Unrecognised Command '" + event + "'");
 
         }
-
-    }
-
-    public void keyTyped(KeyEvent e) {
-
-    }
-
-    public void keyReleased(KeyEvent e) {
 
     }
 
@@ -540,7 +663,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         headingLines = SudoSQL.getHeadingLines(filePath);
         qProducts = SudoSQL.getQproducts(filePath);
 
-        engineers = SudoSQL.getEngineers(filePath);
+        String[] engineers = SudoSQL.getEngineers(filePath);
 
         Log.logLine("Products Loaded: " + products.length);
 
@@ -564,8 +687,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
             Log.logLine("Loading built contract");
             ContractInterface.frame.setVisible(false);
             fullContract = ci.getContract();
-            if(serverFound)
-                syncWithServer();
+            if (serverFound) syncWithServer();
             Log.logLine("");
         }
     }

@@ -37,7 +37,7 @@ public class SQLInterface {
         }
     }
 
-    public void pushFullContract(FullContract contract){
+    private void pushFullContract(FullContract contract){
         for (ContractHeading ch : contract.contractHeadings) {
             int headingID = addContractHeading(ch);
             for (HeadingLine hl : contract.contractHeadingLine) {
@@ -121,11 +121,20 @@ public class SQLInterface {
                   contractID + "'");
     }
 
+    public boolean ifIssued(String contractID){
+        String r =
+                sendQuery("SELECT `issued` FROM `contract` WHERE `contract`.`contractID` = '" + contractID + "'")[0][0];
+        return r.equals("1");
+    }
+
     public String reuploadContract(FullContract fullContract) {
         ArrayList<String[][]> headingLines = new ArrayList<>();
         if(!contractExists(fullContract.details.contractID))
             return "The contract " + fullContract.details.contractID + " does not exist.\nYou can save the contract " +
                    "using the [Save] button instead.";
+        if(ifIssued(fullContract.details.contractID))
+            return "The contract " + fullContract.details.contractID + " has already been issued. It can not be " +
+                   "amended.";
         String[][] contractHeadings = sendQuery("SELECT `headingID` FROM `contractHeading` WHERE `contractHeading`" +
                                                 ".`contractID` = '" + fullContract.details.contractID + "'");
         for(String[] value : contractHeadings)

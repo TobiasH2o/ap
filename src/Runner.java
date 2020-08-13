@@ -11,7 +11,6 @@ public class Runner {
             e.printStackTrace();
         }
 
-
         JFrame frame = new JFrame();
         FileManager fm = new FileManager();
         frame.setTitle("0.2.0.0");

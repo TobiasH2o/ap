@@ -39,6 +39,9 @@ public class FullContract {
         contractHeadingLine.clear();
         products.clear();
         qProducts.clear();
+        headingNumber = 0;
+        headingLineNumber = 0;
+        qID = 0;
     }
 
     public void addProduct(Product product) {
