@@ -188,7 +188,6 @@ public class SuggestionField implements DocumentListener, KeyListener, FocusList
                 break;
 
             default:
-                //                Log.logLine(ID);
                 break;
         }
         if (selectedBox != -1) boxes.get(selectedBox).grabFocus();

@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import static javax.swing.BoxLayout.Y_AXIS;
@@ -54,7 +55,8 @@ public class UI extends JPanel implements ActionListener, WindowListener {
     private final String filePath;
     // Builds and views contracts, Must be handed Contract by parent
     private final ContractInterface ci;
-    private final HintTextField deliveryMethod = new HintTextField("Delivery Method");
+    private final JComboBox<? extends String> deliveryTypes = new JComboBox<>(
+            new String[]{"Carrier Standard", "Carrier next day pre 10AM", "Erector deliver and fix", "Lorry", "customer Collect"});
     JDialog dateDialog = new JDialog();
     DatePicker dp = new DatePicker();
     private FullContract fullContract = new FullContract();
@@ -101,7 +103,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         c.weightx = 1;
         c.anchor = GridBagConstraints.LINE_START;
         c.ipadx = 190;
-        dateDialog.add(deliveryMethod, c);
+        dateDialog.add(deliveryTypes, c);
         c.gridx = 1;
         c.gridy = 1;
         c.weightx = 0.2;
@@ -589,13 +591,14 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                 fullContract.details.contractDate = LocalDate.now();
                 fullContract.details.deliveryDate =
                         LocalDate.parse(dp.getSelectedDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                fullContract.details.deliveryMethod = deliveryMethod.getText();
+                fullContract.details.deliveryMethod =
+                        Objects.requireNonNull(deliveryTypes.getSelectedItem()).toString();
                 sql.setContractDate(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
                         fullContract.details.contractID);
                 sql.issueContract(fullContract.details.contractID);
                 sql.setDeliveryDate(fullContract.details.deliveryDate, fullContract.details.contractID);
                 sql.setDeliveryMethod(fullContract.details.deliveryMethod, fullContract.details.contractID);
-
+                printer.setAllPrints(true);
                 printer.updateContract(fullContract);
                 printer.printContract(job);
                 break;
@@ -619,6 +622,8 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                     if (printer.gotContract()) {
                         if (ci.getContract().details.issued)
                             JOptionPane.showMessageDialog(this, "This Contract has been issued.");
+
+                        printer.setAllPrints(false);
                         printer.printContract(job);
                     } else JOptionPane.showMessageDialog(this, "Please load or make a Contract first.");
                 }

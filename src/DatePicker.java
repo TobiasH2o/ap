@@ -18,7 +18,6 @@ public class DatePicker extends JPanel implements ActionListener {
     String[] years;
     DayOfWeek[] days;
     JComboBox<? extends String> yearComboBox;
-
     String date = "2000-01-01";
 
     public DatePicker() {
@@ -94,7 +93,7 @@ public class DatePicker extends JPanel implements ActionListener {
 
     private void calcDayCount() {
         days = new DayOfWeek[LocalDate.of((int) Convert.getIfNumeric("" + yearComboBox.getSelectedItem()),
-                                          monthComboBox.getSelectedIndex() + 1, 1).lengthOfMonth()];
+                monthComboBox.getSelectedIndex() + 1, 1).lengthOfMonth()];
         Log.logLine(
                 days.length + " days in the selected month (" + Month.of(monthComboBox.getSelectedIndex() + 1) + ")");
     }
@@ -103,13 +102,13 @@ public class DatePicker extends JPanel implements ActionListener {
         DayOfWeek name;
         for (int i = 0;i < days.length;i++) {
             name = LocalDate.of((int) Convert.getIfNumeric("" + yearComboBox.getSelectedItem()),
-                                monthComboBox.getSelectedIndex() + 1, i + 1).getDayOfWeek();
+                    monthComboBox.getSelectedIndex() + 1, i + 1).getDayOfWeek();
             days[i] = name;
             Log.logLine((i + 1) + ": " + name);
         }
     }
 
-    public String getSelectedDate(){
+    public String getSelectedDate() {
         return date;
     }
 
@@ -126,11 +125,10 @@ public class DatePicker extends JPanel implements ActionListener {
             buildGrid();
         } else if (e.getActionCommand().charAt(0) == 'B') {
             String month = "" + (monthComboBox.getSelectedIndex() + 1);
-            if(month.length() == 1){
+            if (month.length() == 1) {
                 month = "0" + month;
             }
-            date =
-                    yearComboBox.getSelectedItem() + "-" + month + "-" + e.getActionCommand().replace("B", "");
+            date = yearComboBox.getSelectedItem() + "-" + month + "-" + e.getActionCommand().replace("B", "");
             Log.logLine("Date selected " + date);
         }
 

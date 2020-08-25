@@ -443,8 +443,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         sf.addBox(a);
         if (!comment.equals("null")) b.setText(comment);
         else b.setText("");
-        if (quant.equals("")) c.setText("1");
-        else c.setText(quant);
+        c.setText(quant);
         a.addKeyListener(this);
         a.setFocusTraversalKeysEnabled(false);
         b.addKeyListener(this);
@@ -886,6 +885,8 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                     break;
                 }
                 if (e.getSource().equals(quantCont.getComponent(i))) {
+                    if(((HintTextField)quantCont.getComponent(i)).getText().isBlank())
+                        ((HintTextField)quantCont.getComponent(i)).setText("1");
                     ((HintTextField) descCont.getComponent(i)).grabFocus();
                     break;
                 }

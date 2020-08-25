@@ -6,11 +6,11 @@ public class Product {
 
     public String productID;
     public String description;
-    public int makeTime;
-    public int plasmaTime;
-    public int paintTime;
-    public int balanceTime;
-    public int testTime;
+    public double makeTime;
+    public double plasmaTime;
+    public double paintTime;
+    public double balanceTime;
+    public double testTime;
     public BigDecimal salesCost;
     public String productType;
     public Boolean skilled;
@@ -38,8 +38,8 @@ public class Product {
     public Boolean silo;
 
 
-    public Product(String productID, String description, int makeTime, int plasmaTime, int paintTime, int balanceTime,
-                   int testTime, double salesCost, String productType, Boolean skilled, Boolean stock,
+    public Product(String productID, String description, double makeTime, double plasmaTime, double paintTime, double balanceTime,
+            double testTime, double salesCost, String productType, Boolean skilled, Boolean stock,
                    Boolean discontinued, Boolean fan, Boolean impellor, Boolean cyclone, Boolean broughtOut,
                    Boolean broughtOutPaB, Boolean controlBox, Boolean filter, Boolean sprayBooth, Boolean pipeOrBend,
                    Boolean soundEnclosure, Boolean valve, Boolean dustUnit, Boolean hood, Boolean beltGuard,

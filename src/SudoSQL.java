@@ -93,9 +93,9 @@ public class SudoSQL {
         FileManager.checkFile(f.getPath());
         for(String line : new FileManager(filePath).readFile("\\Tables\\Product.txt")){
                 String[] data = line.split("~~");
-                products.add(new Product(data[0], data[1], (int) Convert.getIfNumeric(data[2]),
-                                         (int) Convert.getIfNumeric(data[3]), (int) Convert.getIfNumeric(data[4]),
-                                         (int) Convert.getIfNumeric(data[5]), (int) Convert.getIfNumeric(data[6]),
+                products.add(new Product(data[0], data[1], Convert.getIfNumeric(data[2]),
+                                         Convert.getIfNumeric(data[3]), Convert.getIfNumeric(data[4]),
+                                         Convert.getIfNumeric(data[5]), Convert.getIfNumeric(data[6]),
                                          Convert.getIfNumeric(data[7].replaceAll("£", "")), data[8],
                                          Convert.getBoolean(data[9]),
                                          Convert.getBoolean(data[10]), Convert.getBoolean(data[11]),

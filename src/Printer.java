@@ -23,6 +23,10 @@ import java.util.List;
 public class Printer implements Printable, ActionListener {
 
     private final BufferedImage logo;
+    private final String[] dontSum = new String[]{"10HPUcut", "10LPUcut", "12HPUcut", "12LPUcut", "2.5HPUcut",
+            "2.5LPUcut", "2HPUcut", "2LPUcut", "3HPUcut", "3LPUcut", "3.5HPUcut", "3.5LPUcut", "4HPUcut", "4LPUcut"
+            , "4.5HPUcut", "4.5LPUcut", "5HPUcut", "5LPUcut", "5.5HPUcut", "5.5LPUcut", "6HPUcut", "6LPUcut",
+            "7HPUcut", "7LPUcut", "8HPUcut", "8LPUcut", "9HPUcut", "9LPUcut"};
     private final int lineBuffer = 5;
     private final int closeLineBuffer = 2;
     private final double imageSize = 0.5;
@@ -70,7 +74,7 @@ public class Printer implements Printable, ActionListener {
 
         engineersCopy.setText("Engineers copy");
         bends.setText("Bends");
-        stockItems.setText("Stock Items");
+        stockItems.setText("Purchase");
         skilled.setText("Skilled");
         plasma.setText("Plasma");
         pipes.setText("Pipes");
@@ -206,23 +210,23 @@ public class Printer implements Printable, ActionListener {
                         g2.setColor(new Color(255, 255, 255));
                         g2.fillRect((int) (widthSize[sumTable] * pf.getImageableWidth()) -
                                     (g2.getFontMetrics().stringWidth(sumName) + 5), (int) cSize,
-                                    (int) (width + (g2.getFontMetrics().stringWidth(sumName) + 5)),
-                                    g2.getFontMetrics().getHeight() * 2);
+                                (int) (width + (g2.getFontMetrics().stringWidth(sumName) + 5)),
+                                g2.getFontMetrics().getHeight() * 2);
                         g2.setColor(new Color(0, 0, 0, 255));
                         g2.drawRect((int) (widthSize[sumTable] * pf.getImageableWidth()), (int) cSize - 5, (int) width,
-                                    g2.getFontMetrics().getHeight() * 2);
+                                g2.getFontMetrics().getHeight() * 2);
                         g2.drawString(sumName, (int) (widthSize[sumTable] * pf.getImageableWidth()) -
                                                (g2.getFontMetrics().stringWidth(sumName) + 5),
-                                      (int) (cSize - 5 + (g2.getFontMetrics().getHeight() * 1.5)));
+                                (int) (cSize - 5 + (g2.getFontMetrics().getHeight() * 1.5)));
                         g2.drawString(costs[costPosition][0], (int) (widthSize[sumTable] * pf.getImageableWidth() + 5),
-                                      (int) (cSize - 5 + (g2.getFontMetrics().getHeight() * 1.5)));
+                                (int) (cSize - 5 + (g2.getFontMetrics().getHeight() * 1.5)));
                     }
                 }
                 headingCount++;
                 g2.setFont(subHeading);
                 g2.setColor(new Color(0, 0, 0));
                 g2.drawString(printDetails.get(i)[0], (int) (pf.getImageableWidth() * widthSize[1]),
-                              (int) (cSize + lineBuffer));
+                        (int) (cSize + lineBuffer));
 
                 cSize += (lineBuffer * 2);
                 cSize +=
@@ -232,19 +236,15 @@ public class Printer implements Printable, ActionListener {
                 for (int j = 0;j < printDetails.get(i).length;j++) {
                     if (!printDetails.get(i)[j].contains("##")) {// !(Marks a new line)
                         if (printColumns[j * 2].equals("Quantity")) g2.drawString(printDetails.get(i)[j],
-                                                                                  (int) ((pf.getImageableWidth() *
-                                                                                          widthSize[j + 1]) - (10 +
-                                                                                                               (g2.getFontMetrics()
-                                                                                                                        .stringWidth(
-                                                                                                                                printDetails
-                                                                                                                                        .get(i)[j])))),
-                                                                                  (int) cSize);// Places quant next
+                                (int) ((pf.getImageableWidth() * widthSize[j + 1]) -
+                                       (10 + (g2.getFontMetrics().stringWidth(printDetails.get(i)[j])))),
+                                (int) cSize);// Places quant next
                             // to bar
                         else if (printColumns[j * 2].toUpperCase().contains("TIME"))
                             g2.drawString(fixTime(printDetails.get(i)[j]),
-                                          (int) (pf.getImageableWidth() * widthSize[j]), (int) cSize);
+                                    (int) (pf.getImageableWidth() * widthSize[j]), (int) cSize);
                         else g2.drawString(printDetails.get(i)[j], (int) (pf.getImageableWidth() * widthSize[j]),
-                                           (int) cSize);
+                                    (int) cSize);
                     }
                 }
                 for (int j = 0;j < printDetails.get(i).length;j++) {
@@ -267,7 +267,7 @@ public class Printer implements Printable, ActionListener {
                 if (sumTable != -1) {
 
                     double width;
-                    if(costs.length >= 2) {
+                    if (costs.length >= 2) {
                         g2.setFont(basicFont);
                         width = (1 - widthSize[sumTable]) * pf.getImageableWidth();
                         if (sumTable < widthSize.length - 1)
@@ -280,9 +280,11 @@ public class Printer implements Printable, ActionListener {
                         g2.setColor(new Color(0, 0, 0, 255));
                         g2.drawRect((int) (widthSize[sumTable] * pf.getImageableWidth()), (int) cSize - 5, (int) width,
                                 g2.getFontMetrics().getHeight() * 2);
-                        g2.drawString(sumName, (int) (widthSize[sumTable] * pf.getImageableWidth()) - (g2.getFontMetrics().stringWidth(sumName) + 5),
+                        g2.drawString(sumName, (int) (widthSize[sumTable] * pf.getImageableWidth()) -
+                                               (g2.getFontMetrics().stringWidth(sumName) + 5),
                                 (int) (cSize - 5 + (g2.getFontMetrics().getHeight() * 1.5)));
-                        g2.drawString(costs[costs.length - 2][0], (int) (widthSize[sumTable] * pf.getImageableWidth() + 5),
+                        g2.drawString(costs[costs.length - 2][0],
+                                (int) (widthSize[sumTable] * pf.getImageableWidth() + 5),
                                 (int) (cSize - 5 + (g2.getFontMetrics().getHeight() * 1.5)));
 
                         cSize += (lineBuffer * 2);
@@ -292,22 +294,23 @@ public class Printer implements Printable, ActionListener {
 
                     g2.setFont(basicFont);
 
-                        width = (1 - widthSize[sumTable]) * pf.getImageableWidth();
-                        if (sumTable < widthSize.length - 1)
-                            width = (widthSize[sumTable + 1] - widthSize[sumTable]) * pf.getImageableWidth();
-                        g2.setColor(new Color(255, 255, 255));
-                        g2.fillRect((int) (widthSize[sumTable] * pf.getImageableWidth()) -
-                                    (g2.getFontMetrics().stringWidth(sumName) + 5), (int) cSize,
-                                (int) (width + (g2.getFontMetrics().stringWidth(sumName) + 5)),
-                                g2.getFontMetrics().getHeight() * 2);
-                        g2.setColor(new Color(0, 0, 0, 255));
-                        g2.drawRect((int) (widthSize[sumTable] * pf.getImageableWidth()), (int) cSize - 5, (int) width,
-                                g2.getFontMetrics().getHeight() * 2);
-                        g2.drawString("Total " + sumName, (int) (widthSize[sumTable] * pf.getImageableWidth()) - (g2.getFontMetrics().stringWidth("Total " + sumName) + 5),
-                                (int) (cSize - 5 + (g2.getFontMetrics().getHeight() * 1.5)));
-                        if (costs[costs.length - 1] != null) g2.drawString(costs[costs.length - 1][0],
-                                (int) (widthSize[sumTable] * pf.getImageableWidth() + 5),
-                                (int) (cSize - 5 + (g2.getFontMetrics().getHeight() * 1.5)));
+                    width = (1 - widthSize[sumTable]) * pf.getImageableWidth();
+                    if (sumTable < widthSize.length - 1)
+                        width = (widthSize[sumTable + 1] - widthSize[sumTable]) * pf.getImageableWidth();
+                    g2.setColor(new Color(255, 255, 255));
+                    g2.fillRect((int) (widthSize[sumTable] * pf.getImageableWidth()) -
+                                (g2.getFontMetrics().stringWidth(sumName) + 5), (int) cSize,
+                            (int) (width + (g2.getFontMetrics().stringWidth(sumName) + 5)),
+                            g2.getFontMetrics().getHeight() * 2);
+                    g2.setColor(new Color(0, 0, 0, 255));
+                    g2.drawRect((int) (widthSize[sumTable] * pf.getImageableWidth()), (int) cSize - 5, (int) width,
+                            g2.getFontMetrics().getHeight() * 2);
+                    g2.drawString("Total " + sumName, (int) (widthSize[sumTable] * pf.getImageableWidth()) -
+                                                      (g2.getFontMetrics().stringWidth("Total " + sumName) + 5),
+                            (int) (cSize - 5 + (g2.getFontMetrics().getHeight() * 1.5)));
+                    if (costs[costs.length - 1] != null) g2.drawString(costs[costs.length - 1][0],
+                            (int) (widthSize[sumTable] * pf.getImageableWidth() + 5),
+                            (int) (cSize - 5 + (g2.getFontMetrics().getHeight() * 1.5)));
 
                 }
 
@@ -380,10 +383,9 @@ public class Printer implements Printable, ActionListener {
                         summnation.add(getIfNumeric(
                                 printDetails.get(i)[sumTable].replaceAll("£", "").replaceAll(",", "")));
         }
-        if(costCounter == -1)
-            costCounter++;
-        if(costCounter >= 0) {
-            costs[costCounter] = new String[]{""};
+        if (costCounter == -1) costCounter++;
+        if (costCounter >= 0) {
+            costs[costCounter] = new String[]{"",""};
             if (sumType.equals("MONEY")) costs[costCounter][0] = fixCost(summnation.toString());
             else costs[costCounter][0] = summnation.toString();
             summnation = summnation.negate();
@@ -391,7 +393,7 @@ public class Printer implements Printable, ActionListener {
             for (int i = 0;i < costs.length - 1;i++) {
                 summnation = summnation.add(new BigDecimal(costs[i][0].replaceAll("£", "").replaceAll(",", "").trim()));
             }
-            if(costCounter != 1) {
+            if (costCounter != 1) {
                 costs[costCounter] = new String[]{""};
                 costs[costCounter][0] = fixCost(summnation.toString());
             }
@@ -478,37 +480,53 @@ public class Printer implements Printable, ActionListener {
 
         g2.setFont(titleFont);
 
+        String longTitle = title.toUpperCase();
+        Font font = titleFont;
+        if (g2.getFontMetrics().stringWidth(longTitle) <
+            g2.getFontMetrics(largeBasicFont).stringWidth("Air Plants Dust Extraction")) {
+            longTitle = "Air Plants Dust Extraction";
+            font = largeBasicFont;
+        }
+
         g2.drawString(title.toUpperCase(), (int) (pf.getImageableWidth() -
                                                   (g2.getFontMetrics(largeBasicFont).stringWidth(longestEntry) +
-                                                   g2.getFontMetrics().stringWidth(title.toUpperCase())) - 40),
-                      40 + g2.getFontMetrics().getHeight());
+                                                   g2.getFontMetrics(font).stringWidth(longTitle)) - 40),
+                40 + g2.getFontMetrics().getHeight());
 
         g2.setFont(largeBasicFont);
 
+        g2.drawString("Air Plants Dust Extraction", (int) (pf.getImageableWidth() - (g2.getFontMetrics(largeBasicFont)
+                                                                                             .stringWidth(
+                                                                                                     longestEntry) +
+                                                                                     g2.getFontMetrics(font)
+                                                                                             .stringWidth(longTitle)) -
+                                                           40),
+                40 + g2.getFontMetrics().getHeight() + g2.getFontMetrics(titleFont).getHeight());
+
         g2.drawString("Contract Number: " + fc.fullContractID(),
-                      (int) pf.getImageableWidth() - 5 - g2.getFontMetrics().stringWidth(longestEntry),
-                      (int) cSize + 5 + g2.getFontMetrics().getHeight());
+                (int) pf.getImageableWidth() - 5 - g2.getFontMetrics().stringWidth(longestEntry),
+                (int) cSize + 5 + g2.getFontMetrics().getHeight());
 
         cSize += 5 + g2.getFontMetrics().getHeight();
 
-        g2.drawString("Date of Contract: " + fc.details.contractDate.format(DateTimeFormatter.ofPattern("dd-MM" +
-                                                                                                        "-yyyy")),
-                      (int) pf.getImageableWidth() - 5 - g2.getFontMetrics().stringWidth(longestEntry),
-                      (int) cSize + 5 + g2.getFontMetrics().getHeight());
+        g2.drawString(
+                "Date of Contract: " + fc.details.contractDate.format(DateTimeFormatter.ofPattern("dd-MM" + "-yyyy")),
+                (int) pf.getImageableWidth() - 5 - g2.getFontMetrics().stringWidth(longestEntry),
+                (int) cSize + 5 + g2.getFontMetrics().getHeight());
 
         cSize += 5 + g2.getFontMetrics().getHeight();
 
-        g2.drawString("Date of delivery: " + fc.details.deliveryDate.format(DateTimeFormatter.ofPattern("dd-MM" +
-                                                                                                        "-yyyy")),
-                      (int) pf.getImageableWidth() - 5 - g2.getFontMetrics().stringWidth(longestEntry),
-                      (int) cSize + 5 + g2.getFontMetrics().getHeight());
+        g2.drawString(
+                "Date of delivery: " + fc.details.deliveryDate.format(DateTimeFormatter.ofPattern("dd-MM" + "-yyyy")),
+                (int) pf.getImageableWidth() - 5 - g2.getFontMetrics().stringWidth(longestEntry),
+                (int) cSize + 5 + g2.getFontMetrics().getHeight());
 
         cSize += 5 + g2.getFontMetrics().getHeight();
 
 
         g2.drawString("Delivery Method: " + fc.details.deliveryMethod,
-                      (int) pf.getImageableWidth() - 5 - g2.getFontMetrics().stringWidth(longestEntry),
-                      (int) cSize + 5 + g2.getFontMetrics().getHeight());
+                (int) pf.getImageableWidth() - 5 - g2.getFontMetrics().stringWidth(longestEntry),
+                (int) cSize + 5 + g2.getFontMetrics().getHeight());
 
         cSize -= (5 + g2.getFontMetrics().getHeight()) * 2;
 
@@ -517,10 +535,6 @@ public class Printer implements Printable, ActionListener {
         if (longestEntry.length() < (fc.details.address2).length()) longestEntry = fc.details.address2;
         if (longestEntry.length() < (fc.details.address3).length()) longestEntry = fc.details.address3;
         if (longestEntry.length() < (fc.details.postcode).length()) longestEntry = fc.details.postcode;
-
-        g2.drawImage(logo, g2.getFontMetrics().stringWidth(longestEntry) + 25, 40,
-                     (int) (Math.round(logo.getWidth() * imageSize)), (int) Math.round(logo.getHeight() * imageSize),
-                     null);
 
         g2.drawString(fc.details.companyName, 25, (int) cSize);
         cSize += 5 + g2.getFontMetrics().getHeight();
@@ -543,7 +557,7 @@ public class Printer implements Printable, ActionListener {
             g2.drawString(printColumns[(k * 2)], (int) (pf.getImageableWidth() * widthSize[k]), (int) cSize);
             g2.setColor(new Color(187, 187, 187));
             if (k != 0) g2.fillRect(((int) (pf.getImageableWidth() * widthSize[k]) - 5), (int) (cSize + 2), 1,
-                                    (int) (pf.getImageableHeight() - (cSize + 2)) - 30);
+                    (int) (pf.getImageableHeight() - (cSize + 2)) - 30);
         }
         cSize += 2;
         g2.setColor(new Color(0, 0, 0));
@@ -564,7 +578,7 @@ public class Printer implements Printable, ActionListener {
                                                                           g2.getFontMetrics().stringWidth(
                                                                                   "page" + (pi + 1) + " of " +
                                                                                   (sPos.length - 1)),
-                          (int) (pf.getImageableHeight() - 5));
+                    (int) (pf.getImageableHeight() - 5));
         }
 
 
@@ -588,6 +602,7 @@ public class Printer implements Printable, ActionListener {
     }
 
     public void prepBends() {
+        String[] s;
         this.description = 1;
         title = "BENDS";
         printDetails.clear();
@@ -596,11 +611,20 @@ public class Printer implements Printable, ActionListener {
             for (HeadingLine chl : fc.contractHeadingLine)
                 if (ch.headingID == chl.headingID) for (Product pr : fc.products)
                     if (pr.productID.equalsIgnoreCase(chl.productID)) if (pr.productType.equalsIgnoreCase("bends")) {
-                        printDetails.add(new String[]{"" + chl.quantity, getDesc(pr, chl),
-                                "" + (pr.makeTime * chl.quantity)});
+                        s = new String[0];
+                        if(("" + (pr.makeTime * chl.quantity)).split("\\.").length > 1)
+                            if(("" + (pr.makeTime * chl.quantity)).split("\\.")[1].length() > 3)
+                                s = new String[]{
+                                    "" + chl.quantity, getDesc(pr, chl),
+                                    ("" + (pr.makeTime * chl.quantity)).split("\\.")[0] + ("" + (pr.makeTime * chl.quantity)).split("\\.")[1].substring(0, 3)};
+                            if(s.length == 0)
+                                s = new String[]{
+                                        "" + chl.quantity, getDesc(pr, chl),
+                                        ("" + (pr.makeTime * chl.quantity))};
+                            printDetails.add(s);
                         break;
                     }
-
+        printDetails = sort(1, printDetails);
         printDetails = sumDupes(printDetails, new int[]{1}, new int[]{0, 2});
         sumTable = 2;
         sumName = "Make time";
@@ -608,7 +632,7 @@ public class Printer implements Printable, ActionListener {
 
     public void prepStockItems() {
         description = 1;
-        title = "STOCK ITEMS";
+        title = "PURCHASE";
         printDetails.clear();
         printColumns = new String[]{"Quantity", "0.1", "Description", "0.35"};
         for (HeadingLine chl : fc.contractHeadingLine)
@@ -618,6 +642,7 @@ public class Printer implements Printable, ActionListener {
                     break;
                 }
             }
+        printDetails = sort(1, printDetails);
         printDetails = sumDupes(printDetails, new int[]{1}, new int[]{0});
     }
 
@@ -632,8 +657,8 @@ public class Printer implements Printable, ActionListener {
                     for (Product pr : fc.products) {
                         if (chl.productID.equalsIgnoreCase(pr.productID)) {
                             if (pr.skilled) {
-                                printDetails.add(new String[]{"" + chl.quantity, getDesc(pr, chl),
-                                        "" + (pr.makeTime * chl.quantity)});
+                                printDetails.add(new String[]{
+                                        "" + chl.quantity, getDesc(pr, chl), "" + (pr.makeTime * chl.quantity)});
                                 break;
                             }
                         }
@@ -643,6 +668,7 @@ public class Printer implements Printable, ActionListener {
         }
         sumName = "Make Time:";
         sumTable = 2;
+        printDetails = sort(1, printDetails);
         printDetails = sumDupes(printDetails, new int[]{1}, new int[]{0, 2});
     }
 
@@ -667,10 +693,10 @@ public class Printer implements Printable, ActionListener {
         for (HeadingLine hl : fc.contractHeadingLine)
             for (Product pr : fc.products)
                 if (hl.productID.equalsIgnoreCase(pr.productID)) {
-                    if (pr.productType.equalsIgnoreCase("pipes"))
-                        printDetails.add(new String[]{hl.quantity + "", getDesc(pr, hl),
-                                "" + (pr.makeTime * hl.quantity)});
+                    if (pr.productType.equalsIgnoreCase("pipes")) printDetails
+                            .add(new String[]{hl.quantity + "", getDesc(pr, hl), "" + (pr.makeTime * hl.quantity)});
                 }
+        printDetails = sort(1, printDetails);
         printDetails = sumDupes(printDetails, new int[]{1}, new int[]{0, 2});
 
     }
@@ -705,6 +731,7 @@ public class Printer implements Printable, ActionListener {
             }
             cCat = "";
         }
+        printDetails = sort(1, printDetails);
         printDetails = sumDupes(printDetails, new int[]{1}, new int[]{0});
     }
 
@@ -757,7 +784,8 @@ public class Printer implements Printable, ActionListener {
             for (String[] check : returnValues) {
                 found = true;
                 for (int checkPos : checks) {
-                    if (!check[checkPos].equals(value[checkPos])) {
+                    Log.logLine(check[checkPos]);
+                    if (!check[checkPos].equals(value[checkPos]) || (check[checkPos].contains("Meters of") && !check[checkPos].contains("Mtr Coil"))) {
                         found = false;
                         break;
                     }
@@ -776,6 +804,14 @@ public class Printer implements Printable, ActionListener {
         }
 
         return returnValues.toArray(new String[][]{});
+    }
+
+    private boolean anyMatch(String[] array, String condition){
+        for(String c : array){
+            if(c.equalsIgnoreCase(condition))
+                return true;
+        }
+        return false;
     }
 
     // Checks if its double with error catching
@@ -894,7 +930,13 @@ public class Printer implements Printable, ActionListener {
 
     private String getDesc(Product pr, HeadingLine chl) {
         String des = "";
-        if (!pr.description.equalsIgnoreCase("null")) des = pr.description;
+        if (pr.productType.equals("QP")) {
+            des = "Special brought out product";
+        } else if (pr.productType.equals("QL")) {
+            des = "Special manufactured product";
+        } else {
+            if (!pr.description.equalsIgnoreCase("null")) des = pr.description;
+        }
         if (!(chl.comment.equalsIgnoreCase("null") || chl.comment.isEmpty())) des += " - " + chl.comment;
         return des;
     }
@@ -925,6 +967,58 @@ public class Printer implements Printable, ActionListener {
         this.job = job;
         job.setPrintable(this);
         printTypes.setVisible(true);
+    }
+
+    public ArrayList<String[]> sort(int sortColum, ArrayList<String[]> values) {
+        int[] valuePositions = new int[values.size()];
+        int numEnd = 0;
+        boolean end = false;
+        for (int i = 0;i < values.size();i++) {
+            if (values.get(i).length > 1) {
+                end = true;
+                while (end) {
+                    if (values.get(i)[sortColum].length() > numEnd)
+                        if (Convert.isNumeric("" + values.get(i)[sortColum].charAt(numEnd))) numEnd++;
+                        else end = false;
+                    else end = false;
+                }
+                if (numEnd == 0) {
+                    valuePositions[i] = Integer.MAX_VALUE;
+                } else {
+                    valuePositions[i] = (int) Convert.getIfNumeric(values.get(i)[sortColum].substring(0, numEnd));
+                }
+            }
+        }
+        return insertionSort(valuePositions, values);
+    }
+
+    public ArrayList<String[]> insertionSort(int[] array, ArrayList<String[]> values) {
+        for (int i = 1;i < array.length;i++) {
+            int current = array[i];
+            String[] currentValues = values.get(i);
+            int j = i - 1;
+            while (j >= 0 && current < array[j]) {
+                array[j + 1] = array[j];
+                values.set(j + 1, values.get(i));
+                j--;
+            }
+            // at this point we've exited, so j is either -1
+            // or it's at the first element where current >= a[j]
+            array[j + 1] = current;
+            values.set(j + 1, currentValues);
+        }
+        return values;
+    }
+
+    public void setAllPrints(Boolean x) {
+        engineersCopy.setSelected(x);
+        bends.setSelected(x);
+        stockItems.setSelected(x);
+        skilled.setSelected(x);
+        plasma.setSelected(x);
+        pipes.setSelected(x);
+        loading.setSelected(x);
+        erector.setSelected(x);
     }
 
 }
