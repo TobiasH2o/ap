@@ -10,7 +10,6 @@ import java.io.File;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Objects;
 
 
 public class ContractInterface extends JPanel implements ActionListener, KeyListener {
@@ -28,14 +27,12 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
     private final Container idCont = new Container();
     private final Container descCont = new Container();
     private final Container quantCont = new Container();
-    private final Container editSave = new Container();
     private final JPanel dataSection = new JPanel();
     private final JButton prevHeading = new JButton("< < < <");
     private final JButton nextHeading = new JButton("> > > >");
     private final JButton newEntry = new JButton("New Entry");
     private final JButton save = new JButton("Save");
     private final JButton edit = new JButton("Amend");
-    private final JButton duplicate = new JButton("Duplicate");
     private final JButton clear = new JButton("Clear");
     private final HintTextField sectionHeading = new HintTextField("Section Heading", HintTextField.RIGHT_LEADING);
     private final ArrayList<Entry> entries = new ArrayList<>(0);
@@ -139,6 +136,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         clear.setAlignmentX(CENTER_ALIGNMENT);
         clear.setFocusPainted(false);
 
+        JButton duplicate = new JButton("Duplicate");
         duplicate.addActionListener(this);
         duplicate.setActionCommand("Duplicate");
         duplicate.setAlignmentX(CENTER_ALIGNMENT);
@@ -159,6 +157,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         Container westCont = new Container();
         westCont.setLayout(new BoxLayout(westCont, BoxLayout.Y_AXIS));
 
+        Container editSave = new Container();
         editSave.setLayout(new GridLayout(2, 2));
 
         westCont.add(Box.createRigidArea(new Dimension(1, 10)));
@@ -271,7 +270,6 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         String[] rID = new String[ID.size()];
         String[] rDesc = new String[ID.size()];
         int[] rQuant = new int[ID.size()];
-        ArrayList<Integer> qProductPos = new ArrayList<>(0);
         int skips = 0;
         for (int i = 0;i < ID.size();i++) {
             if (Convert.isNumeric(quant.get(i).getText())) {
@@ -301,13 +299,14 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
             tmpDesc[i] = rDesc[i];
             tmpQuant[i] = rQuant[i];
         }
+        ArrayList<Integer> qProductPos = new ArrayList<>(0);
         for (Entry e : entries) {
             String[] eID = e.getID();
             for (int i = 0, eIDLength = eID.length;i < eIDLength;i++) {
                 String id = eID[i];
                 if ((id.equals("QP") || id.equals("QL"))) qProductPos.add(i);
                 else for (Product p : products)
-                    if (p.productID.equalsIgnoreCase(id)) {
+                    if (p.getProductID().equalsIgnoreCase(id)) {
                         fullContract.addProduct(p);
                         break;
                     }
@@ -389,11 +388,11 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
             for (HeadingLine contractHeadingLine : fc.contractHeadingLine) {
                 if (contractHeading.headingID == contractHeadingLine.headingID) {
                     for (Product product : fc.products)
-                        if (contractHeadingLine.productID.equalsIgnoreCase(product.productID)) {
+                        if (contractHeadingLine.productID.equalsIgnoreCase(product.getProductID())) {
                             description = contractHeadingLine.comment;
                             if (description == null) description = "";
-                            addField(product.productID, description, contractHeadingLine.quantity + "");
-                            if (product.productID.equals("QP") || product.productID.equals("QL")) {
+                            addField(product.getProductID(), description, contractHeadingLine.quantity + "");
+                            if (product.getProductID().equals("QP") || product.getProductID().equals("QL")) {
                                 for (Qproduct qproduct : fc.qProducts) {
                                     if (contractHeadingLine.headingLineID == qproduct.headingLineID) {
                                         costs.add(new Double[]{(double) ID.size() - 1, qproduct.cost.doubleValue()});
@@ -507,7 +506,6 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
     public void actionPerformed(ActionEvent e) {
         String command = e.getActionCommand();
 
-        boolean loading = false;
         switch (command) {
 
             case "next":
@@ -544,28 +542,6 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
             case "newItem":
                 addField("", "", "");
                 break;
-
-            case "Engi":
-                if (!loading) {
-                    if (frame.isVisible() && Objects.equals(engineer.getSelectedItem(), "NEW ENGINEER")) {
-                        String engy =
-                                JOptionPane.showInputDialog(this, "Engineer ID:").toUpperCase().replaceAll(" ", "");
-                        boolean add = true;
-                        for (int i = 0;i < engineer.getItemCount();i++) {
-                            if (engineer.getItemAt(i).equals(engy)) {
-                                add = false;
-                                break;
-                            }
-                        }
-                        if (add) {
-                            fm.appendToFile("Data/uploadBuffer.txt", "E:" + engy);
-                            engineer.addItem(engy);
-                        }
-                        engineer.setSelectedItem(engy);
-                    }
-                }
-                break;
-
 
             case "Duplicate":
                 contractNumber.setText("");
@@ -635,6 +611,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                             fm.saveContract(fullContract, new File(fd.getSelectedFile().getPath() + ".cot"));
                         else fm.saveContract(fullContract, new File(fd.getSelectedFile().getPath()));
                     }
+                    JOptionPane.showMessageDialog(frame, "Saved contract.");
                 } else {
                     message = sql.pushContract(fullContract);
                 }
@@ -709,7 +686,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
 
                     for (HeadingLine head : contractHeadingLine) {
                         for (Product prod : this.products) {
-                            if (head.productID.equalsIgnoreCase(prod.productID)) {
+                            if (head.productID.equalsIgnoreCase(prod.getProductID())) {
                                 products.add(prod);
                             }
                         }
@@ -800,7 +777,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                     fullContract.addQProduct(headingLineNumber, entry.getQp(i), ID[i]);
                 }
                 for (Product pr : products)
-                    if (pr.productID.equalsIgnoreCase(ID[i])) {
+                    if (pr.getProductID().equalsIgnoreCase(ID[i])) {
                         fullContract.addProduct(pr);
                         break;
                     }
@@ -873,13 +850,20 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                 if (e.getSource().equals(idCont.getComponent(i))) {
                     String s = ((HintTextField) idCont.getComponent(i)).getText();
                     if (s.equalsIgnoreCase("QP") || s.equalsIgnoreCase("QL")) {
-                        Double cost = Convert.getIfNumeric(JOptionPane.showInputDialog("Product Price"));
+                        double cost = Convert.getIfNumeric(JOptionPane.showInputDialog("Product Price"));
                         if (cost < 0) cost = 0.00;
                         addCost(i, cost);
                         repaint();
                     }
                     sf.apply();
                     Log.logLine("Grabbing Focus");
+                    s = ((HintTextField) idCont.getComponent(i)).getText();
+                    if(s.length() >= 3) {
+                        if (s.endsWith("BKT"))
+                            ((HintTextField) descCont.getComponent(i)).setText("");
+                        else if(s.endsWith("KT"))
+                            ((HintTextField) descCont.getComponent(i)).setText("");
+                    }
                     ((HintTextField) quantCont.getComponent(i)).grabFocus();
                     Log.logLine("Got Focus");
                     break;

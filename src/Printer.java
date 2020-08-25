@@ -13,6 +13,7 @@ import java.awt.print.Printable;
 import java.awt.print.PrinterException;
 import java.awt.print.PrinterJob;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -65,6 +66,7 @@ public class Printer implements Printable, ActionListener {
     private FullContract fc = new FullContract();
     private PrinterJob job;
     private String sumType = "";
+    DecimalFormat df = new DecimalFormat("#.###");
 
     public Printer(BufferedImage logo, JFrame frame) {
         // Stores logo for print sheet
@@ -388,7 +390,7 @@ public class Printer implements Printable, ActionListener {
             costs[costCounter] = new String[]{"",""};
             if (sumType.equals("MONEY")) costs[costCounter][0] = fixCost(summnation.toString());
             else costs[costCounter][0] = summnation.toString();
-            summnation = summnation.negate();
+            summnation = BigDecimal.ZERO;
             costCounter++;
             for (int i = 0;i < costs.length - 1;i++) {
                 summnation = summnation.add(new BigDecimal(costs[i][0].replaceAll("£", "").replaceAll(",", "").trim()));
@@ -420,16 +422,16 @@ public class Printer implements Printable, ActionListener {
                                     "" + contractHeadingLine.quantity, contractHeadingLine.comment, "-", cost});
                         }
                 } else for (Product products : fc.products)
-                    if (contractHeadingLine.productID.equalsIgnoreCase(products.productID)) {
-                        if (products.salesCost.doubleValue() != 0)
-                            cost = "£" + (products.salesCost.doubleValue() * contractHeadingLine.quantity);
+                    if (contractHeadingLine.productID.equalsIgnoreCase(products.getProductID())) {
+                        if (products.getSalesCost().doubleValue() != 0)
+                            cost = "£" + (products.getSalesCost().doubleValue() * contractHeadingLine.quantity);
                         else cost = "£--";
 
                         cost = fixCost(cost);
 
                         returnValue.add(new String[]{
                                 "" + contractHeadingLine.quantity, getDesc(products, contractHeadingLine),
-                                "" + (products.makeTime * contractHeadingLine.quantity), cost});
+                                df.format(products.getMakeTime() * contractHeadingLine.quantity), cost});
                         break;
 
                     }
@@ -447,7 +449,7 @@ public class Printer implements Printable, ActionListener {
 
         for (HeadingLine contractHeadingLine : fc.contractHeadingLine)
             if (headingNumber == contractHeadingLine.headingID) for (Product products : fc.products)
-                if (contractHeadingLine.productID.equalsIgnoreCase(products.productID)) {
+                if (contractHeadingLine.productID.equalsIgnoreCase(products.getProductID())) {
                     returnValues.add(new String[]{
                             "" + contractHeadingLine.quantity, getDesc(products, contractHeadingLine)});
                     break;
@@ -554,7 +556,13 @@ public class Printer implements Printable, ActionListener {
         for (int k = 0;k < widthSize.length;k++) {
             widthSize[k] = getIfNumeric(printColumns[(k * 2) + 1]).doubleValue();
             g2.setColor(new Color(0, 0, 0));
-            g2.drawString(printColumns[(k * 2)], (int) (pf.getImageableWidth() * widthSize[k]), (int) cSize);
+            if(k != 0)
+                g2.drawString(printColumns[(k * 2)], (int) (pf.getImageableWidth() * widthSize[k]),
+                        (int) cSize);
+            else
+                g2.drawString(printColumns[0],
+                        (int) (pf.getImageableWidth() * getIfNumeric(printColumns[((k+1) * 2) + 1]).doubleValue()) - 10 - g2.getFontMetrics().stringWidth(printColumns[0]),
+                        (int) cSize);
             g2.setColor(new Color(187, 187, 187));
             if (k != 0) g2.fillRect(((int) (pf.getImageableWidth() * widthSize[k]) - 5), (int) (cSize + 2), 1,
                     (int) (pf.getImageableHeight() - (cSize + 2)) - 30);
@@ -590,7 +598,7 @@ public class Printer implements Printable, ActionListener {
         sumTable = 3;
         sumName = "Cost";
         printDetails.clear();
-        printColumns = new String[]{"Quantity", "0.03", "Description", "0.2", "Make time", "0.75", "Cost", "0.9"};
+        printColumns = new String[]{"Quantity", "0.05", "Description", "0.2", "Make time", "0.75", "Cost", "0.9"};
         for (int i = 0;i < fc.contractHeadings.size();i++) {
             printDetails.add(new String[]{fc.contractHeadings.get(i).headingTitle});
             String[][] section = getSectionDetailsEngi(fc.contractHeadings.get(i).headingID);
@@ -602,26 +610,17 @@ public class Printer implements Printable, ActionListener {
     }
 
     public void prepBends() {
-        String[] s;
         this.description = 1;
         title = "BENDS";
         printDetails.clear();
-        printColumns = new String[]{"Quantity", "0.03", "Description", "0.2", "Make time", "0.75"};
+        printColumns = new String[]{"Quantity", "0.05", "Description", "0.2", "Make time", "0.75"};
         for (ContractHeading ch : fc.contractHeadings)
             for (HeadingLine chl : fc.contractHeadingLine)
                 if (ch.headingID == chl.headingID) for (Product pr : fc.products)
-                    if (pr.productID.equalsIgnoreCase(chl.productID)) if (pr.productType.equalsIgnoreCase("bends")) {
-                        s = new String[0];
-                        if(("" + (pr.makeTime * chl.quantity)).split("\\.").length > 1)
-                            if(("" + (pr.makeTime * chl.quantity)).split("\\.")[1].length() > 3)
-                                s = new String[]{
-                                    "" + chl.quantity, getDesc(pr, chl),
-                                    ("" + (pr.makeTime * chl.quantity)).split("\\.")[0] + ("" + (pr.makeTime * chl.quantity)).split("\\.")[1].substring(0, 3)};
-                            if(s.length == 0)
-                                s = new String[]{
-                                        "" + chl.quantity, getDesc(pr, chl),
-                                        ("" + (pr.makeTime * chl.quantity))};
-                            printDetails.add(s);
+                    if (pr.getProductID().equalsIgnoreCase(chl.productID)) if (pr.getProductType().equalsIgnoreCase("bends")) {
+                        printDetails.add(new String[]{
+                                "" + chl.quantity, getDesc(pr, chl),
+                                df.format(pr.getMakeTime() * chl.quantity)});
                         break;
                     }
         printDetails = sort(1, printDetails);
@@ -634,10 +633,10 @@ public class Printer implements Printable, ActionListener {
         description = 1;
         title = "PURCHASE";
         printDetails.clear();
-        printColumns = new String[]{"Quantity", "0.1", "Description", "0.35"};
+        printColumns = new String[]{"Quantity", "0.05", "Description", "0.2"};
         for (HeadingLine chl : fc.contractHeadingLine)
             for (Product pr : fc.products) {
-                if (pr.stock && chl.productID.equalsIgnoreCase(pr.productID)) {
+                if (pr.getStock() && chl.productID.equalsIgnoreCase(pr.getProductID())) {
                     printDetails.add(new String[]{"" + chl.quantity, getDesc(pr, chl)});
                     break;
                 }
@@ -650,15 +649,15 @@ public class Printer implements Printable, ActionListener {
         description = 1;
         title = "SKILLED";
         printDetails.clear();
-        printColumns = new String[]{"Quantity", "0.1", "Description", "0.25", "Make Time", "0.75"};
+        printColumns = new String[]{"Quantity", "0.05", "Description", "0.2", "Make Time", "0.75"};
         for (ContractHeading ch : fc.contractHeadings) {
             for (HeadingLine chl : fc.contractHeadingLine) {
                 if (ch.headingID == chl.headingID) {
                     for (Product pr : fc.products) {
-                        if (chl.productID.equalsIgnoreCase(pr.productID)) {
-                            if (pr.skilled) {
+                        if (chl.productID.equalsIgnoreCase(pr.getProductID())) {
+                            if (pr.getSkilled()) {
                                 printDetails.add(new String[]{
-                                        "" + chl.quantity, getDesc(pr, chl), "" + (pr.makeTime * chl.quantity)});
+                                        "" + chl.quantity, getDesc(pr, chl), df.format(pr.getMakeTime() * chl.quantity)});
                                 break;
                             }
                         }
@@ -676,10 +675,10 @@ public class Printer implements Printable, ActionListener {
         printDetails.clear();
         title = "PLASMA";
         description = 1;
-        printColumns = new String[]{"Quantity", "0.25", "Description", "0.35"};
+        printColumns = new String[]{"Quantity", "0.05", "Description", "0.2"};
         for (HeadingLine hl : fc.contractHeadingLine)
             for (Product pr : fc.products)
-                if (pr.productID.equalsIgnoreCase(hl.productID)) if (pr.productType.equalsIgnoreCase("SKILLED"))
+                if (pr.getProductID().equalsIgnoreCase(hl.productID)) if (pr.getProductType().equalsIgnoreCase("SKILLED"))
                     printDetails.add(new String[]{hl.quantity + "", getDesc(pr, hl)});
     }
 
@@ -687,14 +686,14 @@ public class Printer implements Printable, ActionListener {
         description = 1;
         printDetails.clear();
         title = "PIPES";
-        printColumns = new String[]{"Quantity", "0.1", "Description", "0.35", "Make Time", "0.75"};
+        printColumns = new String[]{"Quantity", "0.05", "Description", "0.2", "Make Time", "0.75"};
         sumTable = 2;
         sumName = "Make Time";
         for (HeadingLine hl : fc.contractHeadingLine)
             for (Product pr : fc.products)
-                if (hl.productID.equalsIgnoreCase(pr.productID)) {
-                    if (pr.productType.equalsIgnoreCase("pipes")) printDetails
-                            .add(new String[]{hl.quantity + "", getDesc(pr, hl), "" + (pr.makeTime * hl.quantity)});
+                if (hl.productID.equalsIgnoreCase(pr.getProductID())) {
+                    if (pr.getProductType().equalsIgnoreCase("pipes")) printDetails
+                            .add(new String[]{hl.quantity + "", getDesc(pr, hl), df.format(pr.getMakeTime() * hl.quantity)});
                 }
         printDetails = sort(1, printDetails);
         printDetails = sumDupes(printDetails, new int[]{1}, new int[]{0, 2});
@@ -705,23 +704,23 @@ public class Printer implements Printable, ActionListener {
         description = 1;
         printDetails.clear();
         title = "LOADING";
-        printColumns = new String[]{"Quantity", "0.1", "Description", "0.35"};
+        printColumns = new String[]{"Quantity", "0.05", "Description", "0.2"};
         int items = 0;
         ArrayList<String> cats = new ArrayList<>(0);
         String cCat = "";
         while (items < fc.products.size()) {
             for (HeadingLine chl : fc.contractHeadingLine) {
                 for (Product pr : fc.products) {
-                    if (chl.productID.equalsIgnoreCase(pr.productID)) {
-                        if (cCat.equals("") && !cats.contains(pr.productType)) {
-                            cCat = pr.productType;
-                            cats.add(pr.productType);
-                            if (!pr.productType.isEmpty() && !pr.productType.equalsIgnoreCase("NULL"))
-                                printDetails.add(new String[]{pr.productType});
+                    if (chl.productID.equalsIgnoreCase(pr.getProductID())) {
+                        if (cCat.equals("") && !cats.contains(pr.getProductType())) {
+                            cCat = pr.getProductType();
+                            cats.add(pr.getProductType());
+                            if (!pr.getProductType().isEmpty() && !pr.getProductType().equalsIgnoreCase("NULL"))
+                                printDetails.add(new String[]{pr.getProductType()});
 
                         }
-                        if (cCat.equals(pr.productType)) {
-                            if (!pr.productType.isEmpty() && !pr.productType.equalsIgnoreCase("NULL"))
+                        if (cCat.equals(pr.getProductType())) {
+                            if (!pr.getProductType().isEmpty() && !pr.getProductType().equalsIgnoreCase("NULL"))
                                 printDetails.add(new String[]{"" + chl.quantity, getDesc(pr, chl)});
                             items++;
                         }
@@ -739,7 +738,7 @@ public class Printer implements Printable, ActionListener {
         description = 1;
         title = "ERECTOR";
         printDetails.clear();
-        printColumns = new String[]{"Quantity", "0.05", "Description", "0.3"};
+        printColumns = new String[]{"Quantity", "0.05", "Description", "0.2"};
         for (int i = 0;i < fc.contractHeadings.size();i++) {
             printDetails.add(new String[]{fc.contractHeadings.get(i).headingTitle});
             String[][] section = getErectorDetails(fc.contractHeadings.get(i).headingID);
@@ -930,14 +929,12 @@ public class Printer implements Printable, ActionListener {
 
     private String getDesc(Product pr, HeadingLine chl) {
         String des = "";
-        if (pr.productType.equals("QP")) {
-            des = "Special brought out product";
-        } else if (pr.productType.equals("QL")) {
-            des = "Special manufactured product";
-        } else {
-            if (!pr.description.equalsIgnoreCase("null")) des = pr.description;
+        if (!pr.getDescription().equalsIgnoreCase("null")) des = pr.getDescription();
+        if (!(chl.comment.equalsIgnoreCase("null") || chl.comment.isEmpty())){
+            if(!des.isEmpty())
+                des += " - ";
+            des += chl.comment;
         }
-        if (!(chl.comment.equalsIgnoreCase("null") || chl.comment.isEmpty())) des += " - " + chl.comment;
         return des;
     }
 

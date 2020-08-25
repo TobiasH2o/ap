@@ -1,7 +1,6 @@
 import components.*;
 
 import java.io.File;
-import java.math.BigDecimal;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -30,9 +29,9 @@ public class SudoSQL {
                         fc.addHeadingLine(headingLine);
                         // Find the product that is referenced inside HeadingLine
                         for (Product product : products)
-                            if (headingLine.productID.equals(product.productID)) {
+                            if (headingLine.productID.equals(product.getProductID())) {
                                 fc.addProduct(product);
-                                if(product.productID.equals("QP")|| product.productID.equals("QL"))
+                                if(product.getProductID().equals("QP") || product.getProductID().equals("QL"))
                                     for(Qproduct q : qproducts)
                                         if(q.headingLineID == headingLine.headingLineID)
                                             fc.addQProduct(q.headingLineID, q.cost.doubleValue(), q.type);

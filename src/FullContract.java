@@ -47,7 +47,7 @@ public class FullContract {
     public void addProduct(Product product) {
         boolean dupe = false;
         for (Product pr : products) {
-            if (pr.productID.equalsIgnoreCase(product.productID)) {
+            if (pr.getProductID().equalsIgnoreCase(product.getProductID())) {
                 dupe = true;
                 break;
             }

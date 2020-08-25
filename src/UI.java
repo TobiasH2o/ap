@@ -302,27 +302,27 @@ public class UI extends JPanel implements ActionListener, WindowListener {
 
             File[] contracts = new File(filePath + "\\Data\\Contracts\\").listFiles();
             if (contracts != null && contracts.length > 0) {
-                JCheckBox[] contractBoxes = new JCheckBox[contracts.length];
-                for (int i = 0;i < contracts.length;i++)
-                    contractBoxes[i] = new JCheckBox(contracts[i].getName());
-
+                SelectionList selecList = new SelectionList();
+                for (File contract : contracts)
+                    selecList.addItem(contract.getName());
+                selecList.addOption("Upload");
+                selecList.addOption("Delete");
+                selecList.addOption("Ignore");
                 JPanel selectionPanel = new JPanel();
                 selectionPanel.setLayout(new BoxLayout(selectionPanel, Y_AXIS));
-                JScrollPane scrollPane = new JScrollPane(selectionPanel);
                 selectionPanel.add(new JLabel("Select contracts to save to the server."));
-                for (JCheckBox jCheckBox : contractBoxes)
-                    selectionPanel.add(jCheckBox);
+                selectionPanel.add(selecList);
 
-                JOptionPane.showMessageDialog(this, scrollPane);
+                JOptionPane.showMessageDialog(this, selecList);
+                selecList.redraw();
 
-                for (int i = 0;i < contracts.length;i++) {
-                    Log.logLine(contractBoxes[i].isSelected() + " - " + contracts[i].getName());
-                }
 
                 StringBuilder results = new StringBuilder("Result:");
 
-                for (int i = 0;i < contracts.length;i++)
-                    if (contractBoxes[i].isSelected()) results.append(uploadContract(contracts[i]));
+                for (int i = 0;i < contracts.length;i++) {
+                    if (selecList.checkItemOption(0, i)) results.append(uploadContract(contracts[i]));
+                    if (selecList.checkItemOption(1, i)) fm.deleteDir(contracts[i].getAbsolutePath());
+                }
                 if (results.length() != 7)
                     JOptionPane.showMessageDialog(this, results, "Server Sync Report", JOptionPane.INFORMATION_MESSAGE);
             }
@@ -405,7 +405,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
 
         for (HeadingLine head : contractHeadingLine) {
             for (Product prod : this.products) {
-                if (head.productID.equalsIgnoreCase(prod.productID)) {
+                if (head.productID.equalsIgnoreCase(prod.getProductID())) {
                     products.add(prod);
                 }
             }
@@ -672,7 +672,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
 
         Log.logLine("Products Loaded: " + products.length);
 
-        Stream.of(products).forEach(product -> productCodesArr.add(product.productID));
+        Stream.of(products).forEach(product -> productCodesArr.add(product.getProductID()));
         ci.setProducts(products);
         ci.setProductCodes(productCodesArr);
         ci.updateEngineers(engineers);
