@@ -3,17 +3,18 @@ import components.HeadingLine;
 import components.Qproduct;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
 
 public class FileManager {
 
+    public static String filePath;
     FileWriter fw;
     BufferedWriter bw;
     InputStreamReader fr;
     BufferedReader br;
-    public static String filePath;
 
     public FileManager(String filePath) {
         FileManager.filePath = filePath;
@@ -28,15 +29,16 @@ public class FileManager {
         File f3 = new File(filePath + "\\Data\\Contracts\\");
         if (!f1.exists() || !f1.isDirectory()) {
             Log.logLine("Making Directory " + f1.getName());
-            f1.mkdirs();
+            if (!f1.mkdirs()) JOptionPane.showMessageDialog(null, "Failed to create required directory \\Data\\");
         }
         if (!f2.exists() || !f2.isDirectory()) {
             Log.logLine("Making Directory " + f2.getName());
-            f2.mkdirs();
+            if (!f2.mkdirs()) JOptionPane.showMessageDialog(null, "Failed to create required directory \\Tables\\");
         }
         if (!f3.exists() || !f3.isDirectory()) {
             Log.logLine("Making Directory " + f3.getName());
-            f3.mkdirs();
+            if (!f3.mkdirs())
+                JOptionPane.showMessageDialog(null, "Failed to create required directory " + "\\Data\\Contracts\\");
         }
     }
 
@@ -49,7 +51,9 @@ public class FileManager {
         if (!f.exists()) {
             Log.logLine("Can't discover file");
             try {
-                f.createNewFile();
+                if (!f.createNewFile()) JOptionPane
+                        .showMessageDialog(null, "Failed to create required file:\n" + f.getAbsolutePath(),
+                                "CRITICAL ERROR", JOptionPane.WARNING_MESSAGE);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -63,9 +67,9 @@ public class FileManager {
             // for removing hide attribute
             //Process p = Runtime.getRuntime().exec("attrib -H " + file.getPath());
             p.waitFor();
-            if(file.isHidden()) {
+            if (file.isHidden()) {
                 System.out.println(file.getName() + " hidden attribute is set to true");
-            }else {
+            } else {
                 System.out.println(file.getName() + " hidden attribute not set to true");
             }
         } catch (IOException | InterruptedException e) {
@@ -197,8 +201,11 @@ public class FileManager {
     public void saveContract(FullContract contract, File file) {
         try {
 
-            if (file.exists()) file.delete();
-            file.createNewFile();
+            if (file.exists()) if (file.delete()) if (!file.createNewFile()) {
+                JOptionPane.showMessageDialog(null, "Failed to create critical file:\n" + file.getAbsolutePath(),
+                        "CRITICAL ERROR", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
 
             ArrayList<String> tempArr = new ArrayList<>(0);
             ArrayList<String[]> saveValue = new ArrayList<>(0);
@@ -235,16 +242,17 @@ public class FileManager {
 
     }
 
-    public boolean deleteDir(String filePath) {
+    public void deleteDir(String filePath) {
         File f = new File(filePath);
-        return _deleteDir(f);
+        _deleteDir(f);
     }
 
-    private boolean _deleteDir(File f){
+    private void _deleteDir(File f) {
         File[] allContent = f.listFiles();
-        if(allContent != null)
-            for(File f1 : allContent)
-                _deleteDir(f1);
-            return f.delete();
+        if (allContent != null) for (File f1 : allContent)
+            _deleteDir(f1);
+        if(!f.delete())
+            JOptionPane.showMessageDialog(null, "Failed to remove file:\n" + f.getAbsolutePath(),
+                    "MINOR ERROR", JOptionPane.WARNING_MESSAGE);
     }
 }

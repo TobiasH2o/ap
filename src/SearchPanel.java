@@ -13,9 +13,8 @@ public class SearchPanel extends JPanel implements ActionListener, DocumentListe
 
     public final JFrame frame = new JFrame();
     private final JTextField searchTerm = new JTextField();
-    private final Container north = new Container();
-    private final JComboBox searchTypes =
-            new JComboBox(new String[]{"Contract Number", "Company Name", "Date of contract", "Postcode"});
+    private final JComboBox<? extends String> searchTypes =
+            new JComboBox<>(new String[]{"Contract Number", "Company Name", "Date of contract", "Postcode"});
     private final JButton[] displayItems = new JButton[10];
     private String contractID = "";
     private boolean selectedFile = false;
@@ -45,6 +44,7 @@ public class SearchPanel extends JPanel implements ActionListener, DocumentListe
         JButton next = new JButton(">>>>>>");
         southPanel.add(next);
 
+        Container north = new Container();
         north.setLayout(new GridLayout(1, 2));
         north.add(searchTerm);
         north.add(searchTypes);
@@ -164,7 +164,11 @@ public class SearchPanel extends JPanel implements ActionListener, DocumentListe
             case "next":
                 if (searchTerm.getText().equals("")) {
                     position += displayItems.length;
+                    if(position > dataSet.length)
+                        position = dataSet.length - displayItems.length;
                 } else {
+                    for(JButton b : displayItems)
+                        if(b.getText().equals("------"))
                     changePage(1);
                 }
                 redraw();

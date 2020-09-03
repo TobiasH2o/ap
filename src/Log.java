@@ -1,29 +1,10 @@
-
-import javax.swing.*;
-
-import java.awt.*;
-
 import static java.lang.StackWalker.Option.RETAIN_CLASS_REFERENCE;
 
 public class Log extends Thread{
 
     public static boolean ENABLED = true;
-    private static boolean visible = false;
-    private static final JDialog showPanel = new JDialog();
-    private static final JTextArea text = new JTextArea();
-    private static final JScrollPane scrollPane = new JScrollPane(text);
 
-    public static void showLogger(JComponent c){
-        showPanel.add(scrollPane);
-        showPanel.setSize(200, 200);
-        text.setBackground(new Color(109, 117, 153));
-        text.setForeground(new Color(255,255,255));
-        text.setEditable(false);
-        showPanel.setVisible(true);
-        visible = true;
-    }
-
-    public static void logLine(Object a){
+    public static void logLine(java.io.Serializable a){
         StackWalker walker = StackWalker.getInstance(RETAIN_CLASS_REFERENCE);
         Class<?> callerClass = walker.getCallerClass();
         String b = callerClass.getName();
@@ -42,13 +23,8 @@ public class Log extends Thread{
         logLine(b, a);
     }
 
-    private static void logLine(String a, Object b){
+    private static void logLine(String a, java.io.Serializable b){
         if(ENABLED) {
-            if (visible) {
-                text.append("[" + time() + "|" + a + "]" + " " + b + "\n");
-                scrollPane.getVerticalScrollBar().setValue(scrollPane.getVerticalScrollBar().getMaximum());
-                scrollPane.paintImmediately(0, text.getHeight()- 25, text.getWidth(), 25);
-            }
             System.out.println("[" + time() + "|" + a + "]" + " " + b);
         }
 

@@ -18,7 +18,7 @@ public class DatePicker extends JPanel implements ActionListener {
     String[] years;
     DayOfWeek[] days;
     JComboBox<? extends String> yearComboBox;
-    String date = "2000-01-01";
+    String date = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
     public DatePicker() {
 
@@ -77,6 +77,22 @@ public class DatePicker extends JPanel implements ActionListener {
 
     }
 
+    private void calcValidDays() {
+        if (Convert.getIfNumeric(yearComboBox.getSelectedItem() + "") > LocalDate.now().getYear()) return;
+        Log.logLine(monthComboBox.getSelectedIndex()+1);
+        Log.logLine(LocalDate.now().getMonthValue());
+        if (monthComboBox.getSelectedIndex()+1 > LocalDate.now().getMonthValue()) return;
+        if (monthComboBox.getSelectedIndex()+1 == LocalDate.now().getMonthValue()){
+            for(JButton b : dayButtons)
+                if(Convert.isNumeric(b.getText()))
+                    if(Convert.getIfNumeric(b.getText()) < LocalDate.now().getDayOfMonth())
+                        b.setEnabled(false);
+                    return;
+            }
+        for(JButton b : dayButtons)
+            b.setEnabled(false);
+    }
+
     private void buildGrid() {
         for (JButton b : dayButtons) {
             b.setEnabled(false);
@@ -89,6 +105,7 @@ public class DatePicker extends JPanel implements ActionListener {
             dayButtons[i + sDay].setEnabled(true);
             dayButtons[i + sDay].setActionCommand("B" + i);
         }
+        calcValidDays();
     }
 
     private void calcDayCount() {

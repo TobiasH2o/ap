@@ -57,11 +57,6 @@ public class FullContract {
         }
     }
 
-    public void setContractHeadings(ContractHeading[] ch){
-        contractHeadings.clear();
-        contractHeadings.addAll(Arrays.asList(ch));
-    }
-
     public void setContractHeadingLines(HeadingLine[] chl) {
         contractHeadingLine.clear();
         contractHeadingLine.addAll(Arrays.asList(chl));
@@ -77,7 +72,7 @@ public class FullContract {
         return headingNumber;
     }
 
-    public int addHeading(ContractHeading heading) {
+    public void addHeading(ContractHeading heading) {
         headingNumber = heading.headingID;
         boolean conflict = true;
         do if (contractHeadings.size() != 0) for (ContractHeading ch : contractHeadings)
@@ -85,7 +80,6 @@ public class FullContract {
             else conflict = false;
         else conflict = false; while (conflict);
         contractHeadings.add(new ContractHeading(headingNumber, details.contractID, heading.headingTitle));
-        return headingNumber;
     }
 
     public int addHeadingLine(int headingNumber, String productCode, int quantity, String description) {
@@ -104,13 +98,12 @@ public class FullContract {
                 conflict = false;
             }
         } while (conflict);
-        boolean qProduct = (productCode.contains("QP") || productCode.contains("QL"));
         contractHeadingLine
                 .add(new HeadingLine(headingLineNumber, headingNumber, productCode, description, quantity));
         return headingLineNumber;
     }
 
-    public int addHeadingLine(HeadingLine headingLine) {
+    public void addHeadingLine(HeadingLine headingLine) {
         boolean conflict = true;
         headingLineNumber = headingLine.headingLineID;
         do {
@@ -130,24 +123,6 @@ public class FullContract {
         contractHeadingLine
                 .add(new HeadingLine(headingLineNumber, headingNumber, headingLine.productID, headingLine.comment,
                                      headingLine.quantity));
-        return headingLineNumber;
     }
 
-    public String[][] contractHeadingsAsString() {
-        ArrayList<String[]> rv = new ArrayList<>();
-        for (ContractHeading ch:
-                contractHeadings) {
-            rv.add(new String[]{ch.headingID + "", ch.contractID, ch.headingTitle});
-        }
-        return rv.toArray(new String[0][]);
-    }
-
-    public String[][] contractHeadingLineAsString() {
-        ArrayList<String[]> rv = new ArrayList<>();
-        for (HeadingLine chl : contractHeadingLine) {
-            rv.add(new String[]{
-                    "" + chl.headingLineID, "" + chl.comment, chl.productID, "" + chl.quantity, chl.comment});
-        }
-        return rv.toArray(new String[0][]);
-    }
 }

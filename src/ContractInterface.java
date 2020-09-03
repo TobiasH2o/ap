@@ -2,17 +2,14 @@ import components.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.*;
 import java.io.File;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 
 
-public class ContractInterface extends JPanel implements ActionListener, KeyListener {
+public class ContractInterface extends JPanel implements ActionListener, KeyListener{
 
     public static final JFrame frame = new JFrame();
     private final HintTextField contractNumber = new HintTextField("Contract Number", HintTextField.CENTER_HIDDEN);
@@ -44,6 +41,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
     private final SQLInterface sql = new SQLInterface();
     private Boolean offline = true;
     private boolean issued = false;
+    private boolean edited = false;
     private FullContract fullContract = new FullContract();
     private int heading = 0;
     private String[] productCode = new String[0];
@@ -114,7 +112,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         newEntry.setFocusable(false);
 
         JScrollPane entryView = new JScrollPane(centerCont, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS,
-                                                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         dataSection.setLayout(new BorderLayout());
         dataSection.add(navigation, BorderLayout.NORTH);
@@ -273,7 +271,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         int skips = 0;
         for (int i = 0;i < ID.size();i++) {
             if (Convert.isNumeric(quant.get(i).getText())) {
-                if (Convert.getIfNumeric(quant.get(i).getText()) > 0) {
+                if (Convert.getIfNumeric(quant.get(i).getText()) > 0 && (!ID.get(i).getText().isEmpty())) {
                     rID[i - skips] = ID.get(i).getText();
                     rDesc[i - skips] = desc.get(i).getText();
                     rQuant[i - skips] = (int) Convert.getIfNumeric(quant.get(i).getText());
@@ -299,13 +297,10 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
             tmpDesc[i] = rDesc[i];
             tmpQuant[i] = rQuant[i];
         }
-        ArrayList<Integer> qProductPos = new ArrayList<>(0);
         for (Entry e : entries) {
             String[] eID = e.getID();
-            for (int i = 0, eIDLength = eID.length;i < eIDLength;i++) {
-                String id = eID[i];
-                if ((id.equals("QP") || id.equals("QL"))) qProductPos.add(i);
-                else for (Product p : products)
+            for (String id : eID) {
+                for (Product p : products)
                     if (p.getProductID().equalsIgnoreCase(id)) {
                         fullContract.addProduct(p);
                         break;
@@ -518,6 +513,8 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                         heading++;
                         if (heading >= entries.size()) entries.add(new Entry());
                         loadFromEntries();
+                        if(sectionHeading.getText().isEmpty())
+                            sectionHeading.setText("HEADING " + heading);
                     }
                 } else {
                     if (heading <= entries.size() - 1) {
@@ -559,6 +556,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                 break;
 
             case "Amend": {
+                edited = false;
                 boolean su = true;
                 updateContract();
                 String message = "";
@@ -566,17 +564,17 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                 if (cn.isEmpty()) {
                     su = false;
                     JOptionPane.showMessageDialog(frame, "No contractID provided");
-                } else if (cn.length() < 6) {
+                } else if (cn.length() < 5) {
                     su = false;
-                    JOptionPane.showMessageDialog(frame, "ContractID must be 6 numeric digits");
-                } else if (!Convert.isNumeric(cn.substring(0, 6))) {
+                    JOptionPane.showMessageDialog(frame, "ContractID must be 5 numeric digits");
+                } else if (!Convert.isNumeric(cn.substring(0, 5))) {
                     su = false;
                     JOptionPane.showMessageDialog(frame, "ContractID must be numeric");
                 } else if (offline) {
                     su = false;
                     JOptionPane.showMessageDialog(this, "You can not amend contracts offline. To save the contract " +
                                                         "please use the [save] button.", "ERROR",
-                                                  JOptionPane.WARNING_MESSAGE);
+                            JOptionPane.WARNING_MESSAGE);
                 } else {
                     message = sql.reuploadContract(fullContract);
                 }
@@ -593,13 +591,14 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                 if (cn.isEmpty()) {
                     su = false;
                     JOptionPane.showMessageDialog(frame, "No contractID provided");
-                } else if (cn.length() < 6) {
+                } else if (cn.length() < 5) {
                     su = false;
-                    JOptionPane.showMessageDialog(frame, "ContractID must be 6 numeric digits");
-                } else if (!Convert.isNumeric(cn.substring(0, 6))) {
+                    JOptionPane.showMessageDialog(frame, "ContractID must be 5 numeric digits");
+                } else if (!Convert.isNumeric(cn.substring(0, 5))) {
                     su = false;
-                    JOptionPane.showMessageDialog(frame, "ContractID must be numeric");
+                    JOptionPane.showMessageDialog(frame, "First 5 digit of the contractID must be numeric");
                 } else if (offline) {
+                    edited = false;
                     su = false;
                     JFileChooser fd = new JFileChooser();
                     fd.setDialogTitle("Save Contract");
@@ -613,6 +612,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                     }
                     JOptionPane.showMessageDialog(frame, "Saved contract.");
                 } else {
+                    edited = false;
                     message = sql.pushContract(fullContract);
                 }
                 if (su) JOptionPane
@@ -620,6 +620,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                 break;
             }
             case "Load":
+                edited = false;
                 int cont;
                 updateContract();
                 JFileChooser fd = new JFileChooser();
@@ -629,10 +630,8 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                     cont = 0;
                     fd.showDialog(this, "Load contact");
                     if (!fd.getSelectedFile().getPath().endsWith(".cot")) cont = JOptionPane.showConfirmDialog(this,
-                                                                                                               "The selected file is not supported. Loading the file may not" +
-                                                                                                               " work\n Load anyway?",
-                                                                                                               "FILE FORMAT",
-                                                                                                               JOptionPane.YES_NO_CANCEL_OPTION);
+                            "The selected file is not supported. Loading the file may not" + " work\n Load anyway?",
+                            "FILE FORMAT", JOptionPane.YES_NO_CANCEL_OPTION);
 
                 } while (cont == 1);
                 if (cont == 2) {
@@ -670,16 +669,15 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
 
                     for (String s : heading) {
                         contractHeading.add(new ContractHeading((int) Convert.getIfNumeric(s.split("%50")[0]),
-                                                                s.split("%50")[1], s.split("%50")[2]));
+                                s.split("%50")[1], s.split("%50")[2]));
                     }
                     Log.logLine("Heading Count: " + contractHeading.size());
 
                     for (String s : headingLine) {
                         Log.logLine(s.split("%50"));
                         contractHeadingLine.add(new HeadingLine((int) Convert.getIfNumeric(s.split("%50")[0]),
-                                                                (int) Convert.getIfNumeric(s.split("%50")[1]),
-                                                                s.split("%50")[2], s.split("%50")[3],
-                                                                (int) Convert.getIfNumeric(s.split("%50")[4])));
+                                (int) Convert.getIfNumeric(s.split("%50")[1]), s.split("%50")[2], s.split("%50")[3],
+                                (int) Convert.getIfNumeric(s.split("%50")[4])));
                     }
                     Log.logLine("Heading Line Count: " + contractHeadingLine.size());
 
@@ -693,10 +691,10 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                     }
 
                     for (String s : qProducts) {
-                        if(s.split("%50").length == 4)
-                        qproducts.add(new Qproduct((int) Convert.getIfNumeric(s.split("%50")[0]),
-                                                   (int) Convert.getIfNumeric(s.split("%50")[1]),
-                                                   Convert.getIfNumeric(s.split("%50")[2]), s.split("%50")[3]));
+                        if (s.split("%50").length == 4) qproducts
+                                .add(new Qproduct((int) Convert.getIfNumeric(s.split("%50")[0]),
+                                        (int) Convert.getIfNumeric(s.split("%50")[1]),
+                                        Convert.getIfNumeric(s.split("%50")[2]), s.split("%50")[3]));
                     }
 
                     Log.logLine("Product Count: " + products.size());
@@ -778,6 +776,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                 }
                 for (Product pr : products)
                     if (pr.getProductID().equalsIgnoreCase(ID[i])) {
+                        Log.logLine(pr.getProductID());
                         fullContract.addProduct(pr);
                         break;
                     }
@@ -848,6 +847,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         if (e.getKeyCode() == 9) {
             for (int i = 0;i < idCont.getComponentCount();i++) {
                 if (e.getSource().equals(idCont.getComponent(i))) {
+                    edited = true;
                     String s = ((HintTextField) idCont.getComponent(i)).getText();
                     if (s.equalsIgnoreCase("QP") || s.equalsIgnoreCase("QL")) {
                         double cost = Convert.getIfNumeric(JOptionPane.showInputDialog("Product Price"));
@@ -858,23 +858,41 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                     sf.apply();
                     Log.logLine("Grabbing Focus");
                     s = ((HintTextField) idCont.getComponent(i)).getText();
-                    if(s.length() >= 3) {
-                        if (s.endsWith("BKT"))
-                            ((HintTextField) descCont.getComponent(i)).setText("");
-                        else if(s.endsWith("KT"))
-                            ((HintTextField) descCont.getComponent(i)).setText("");
+                    if (s.length() >= 3) {
+                        String s2;
+                        if (s.toUpperCase().endsWith("BKT")) {
+                            s2 = JOptionPane.showInputDialog(frame, "Bracket center line height (mm):", "BRACKET",
+                                    JOptionPane.WARNING_MESSAGE);
+                            int v = (int) ((Convert.getIfNumeric(s.replaceAll("BKT", "")) * 25.4) + 40) / 2;
+                            while (Convert.getIfNumeric(s2) < v) s2 = JOptionPane.showInputDialog(frame,
+                                    "INVALID BRACKET CENTER LINE VALUE\nBracket " + "center line height (mm):",
+                                    "BRACKET", JOptionPane.WARNING_MESSAGE);
+                            ((HintTextField) descCont.getComponent(i))
+                                    .setText("Bracket center line height " + s2 + "mm");
+                        } else if (s.toUpperCase().endsWith("WB")) {
+                            s2 = JOptionPane.showInputDialog(frame, "Bracket wall to center line (mm):", "BRACKET",
+                                    JOptionPane.WARNING_MESSAGE);
+                            int v = (int) ((Convert.getIfNumeric(s.replaceAll("WB", "")) * 25.4) + 40) / 2;
+                            while (Convert.getIfNumeric(s2) < v) s2 = JOptionPane.showInputDialog(frame,
+                                    "INVALID BRACKET WALL LINE VALUE\nBracket wall to center line (mm):", "BRACKET",
+                                    JOptionPane.WARNING_MESSAGE);
+                            ((HintTextField) descCont.getComponent(i))
+                                    .setText("Bracket wall to center line " + s2 + "mm");
+                        }
                     }
                     ((HintTextField) quantCont.getComponent(i)).grabFocus();
                     Log.logLine("Got Focus");
                     break;
                 }
                 if (e.getSource().equals(quantCont.getComponent(i))) {
-                    if(((HintTextField)quantCont.getComponent(i)).getText().isBlank())
-                        ((HintTextField)quantCont.getComponent(i)).setText("1");
+                    edited = true;
+                    if (((HintTextField) quantCont.getComponent(i)).getText().isBlank())
+                        ((HintTextField) quantCont.getComponent(i)).setText("1");
                     ((HintTextField) descCont.getComponent(i)).grabFocus();
                     break;
                 }
                 if (e.getSource().equals(descCont.getComponent(i))) {
+                    edited = true;
                     if (i + 1 == idCont.getComponentCount()) newEntry.doClick();
                     ((HintTextField) idCont.getComponent(i + 1)).grabFocus();
                     break;
@@ -883,9 +901,12 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         }
     }
 
+    public boolean getEdited(){
+        return edited;
+    }
+
     @Override
     public void keyReleased(KeyEvent e) {
 
     }
-
 }

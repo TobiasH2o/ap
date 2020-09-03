@@ -29,10 +29,10 @@ public class UI extends JPanel implements ActionListener, WindowListener {
 
     // List of available tables in the database to be stored locally
     private final static String[] tables =
-            new String[]{"altFilter", "beltGuard", "bin", "broughtOut", "broughtOutPaB", "cefFilter", "contract", "contractHeading", "controlBoxes", "cyclone", "dustUnit", "engineer", "erectionAndTransport", "fan", "filter", "headingLine", "hood", "impellor", "labourCost", "material", "materialCost", "oAndS", "pipeOrBend", "product", "pulleyBlastGate", "qProduct", "rawMatCost", "rotaryAndTwoWayValves", "silo", "soundEnclosure", "sprayBooth"};
+            new String[]{"contract", "contractHeading", "engineer", "headingLine", "product", "qProduct"};
     private final Container southBox = new Container();
-    private final HintTextField usernameBox = new HintTextField("Username");
-    private final HintTextField passwordBox = new HintTextField("Password");
+    private final HintTextField usernameBox = new HintTextField("Username", HintTextField.CENTER_HIDDEN);
+    private final HintTextField passwordBox = new HintTextField("Password", HintTextField.CENTER_HIDDEN);
     private final JButton submit = new JButton("Load local data");
     private final JButton makeContract = new JButton("Make/Edit Contract");
     private final JButton searchContract = new JButton("Search Orders");
@@ -69,11 +69,18 @@ public class UI extends JPanel implements ActionListener, WindowListener {
     private boolean serverFound = false;
     private double loadingBarMaxValue = 1;
     private double loadingBarCurValue = 1;
-    private String loadingBarTxtValue = "Sync to begin";
+    private String loadingBarTxtValue = "";
     private String username = "";
     private String password = "";
+    private final String version;
+    private final boolean test;
 
-    public UI(JFrame frame) {
+    public UI(JFrame frame, String version, boolean testing) {
+
+        test = testing;
+        if(test)
+            JOptionPane.showMessageDialog(frame, "This is a testing branch of the program");
+        this.version = version;
 
         String myDocuments = null;
         JButton confirmDate = new JButton("Confirm Delivery Info");
@@ -81,35 +88,15 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         confirmDate.setActionCommand("ConfirmIssue&Print");
         dateDialog.setTitle("DELIVERY INFORMATION");
         dateDialog.setSize(350, 250);
-        dateDialog.setLayout(new GridBagLayout());
-        GridBagConstraints c = new GridBagConstraints();
+        dateDialog.setLayout(new BorderLayout());
+        Container south = new Container();
+        south.setLayout(new BoxLayout(south, BoxLayout.X_AXIS));
 
+        dateDialog.add(dp, BorderLayout.CENTER);
 
-        c.gridwidth = 2;
-
-        c.gridx = 0;
-        c.gridy = 0;
-        c.weightx = 1;
-        c.insets = new Insets(0, 5, 5, 5);
-        c.fill = GridBagConstraints.HORIZONTAL;
-
-        dateDialog.add(dp, c);
-
-        c.insets = new Insets(5, 0, 5, 0);
-        c.fill = GridBagConstraints.NONE;
-
-        c.gridx = 0;
-        c.gridy = 1;
-        c.weightx = 1;
-        c.anchor = GridBagConstraints.LINE_START;
-        c.ipadx = 190;
-        dateDialog.add(deliveryTypes, c);
-        c.gridx = 1;
-        c.gridy = 1;
-        c.weightx = 0.2;
-        c.ipadx = 0;
-        c.anchor = GridBagConstraints.LAST_LINE_END;
-        dateDialog.add(confirmDate, c);
+        south.add(deliveryTypes);
+        south.add(confirmDate);
+        dateDialog.add(south, BorderLayout.SOUTH);
 
         try {
             Process p = Runtime.getRuntime()
@@ -141,7 +128,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         ci = new ContractInterface();
 
         logo = fm.loadImage("/Images/Logo.png");
-        printer = new Printer(fm.loadImage("/Images/PrinterLogo.png"), frame);
+        printer = new Printer(frame);
 
         sp.frame.addWindowListener(this);
         ContractInterface.frame.addWindowListener(this);
@@ -362,7 +349,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         return "";
     }
 
-    private FullContract loadContract(File contract) throws Exception {
+    private FullContract loadContract(File contract){
         FullContract fullContract = new FullContract();
         String[] data = fm.readFile(contract);
         String[] cDetails = data[0].split("~~");
@@ -460,7 +447,28 @@ public class UI extends JPanel implements ActionListener, WindowListener {
             String date = dtf.format(now);
             fm.saveFile("\\Data\\SyncDate", new String[][]{{date}});
         }
+        checkVersion();
         return !error;
+    }
+
+    public void checkVersion(){
+        if(!test) {
+            String sVersion = sql.getVersion();
+            if (sVersion.equals(version)) return;
+            String[] segments = sVersion.split("\\.");
+            String[] segments2 = version.split("\\.");
+            for (int i = 0;i < segments.length;i++) {
+                if (Convert.getIfNumeric(segments2[i]) > Convert.getIfNumeric(segments[i])) {
+                    sql.updateVersion(version);
+                    break;
+                } else if (Convert.getIfNumeric(segments2[i]) < Convert.getIfNumeric(segments[i])) {
+                    JOptionPane.showMessageDialog(this,
+                            "A new version of the software is available.[" + sVersion + "]\nIt is recommended " +
+                            "that you update to maintain stability.");
+                    break;
+                }
+            }
+        }
     }
 
     public int getDayDiff(String oldDate) {
@@ -518,6 +526,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                 // It should allow the user to make search and delete orders on a local system
                 if (serverFound) {
                     // Sets the button to assume it failed to connect
+
                     submit.setText("Go Online");
                     this.remove(southBox);
                     if (syncWithServer()) {
@@ -528,7 +537,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                 } else {
                     String serverIP;
                     // Uses basic account with minimal privileges to search for a server
-                    serverIP = ps.searchForServer(username, password, port);
+                    serverIP = ps.searchForServer(username, password, port, test);
                     if (serverIP.split("-")[0].equals("UNAVAILABLE")) {
                         // Alerts the user that it could not find the server
                         // Sets the program into offline mode
@@ -546,10 +555,15 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                         SQLInterface.PASSWORD = password;
                         SQLInterface.USERNAME = username;
                         Log.logLine("Logged IP " + ip);
-                        serverFound = true;
-                        submit.setText("Go Online");
-                        submit.doClick();
-                        ci.setOffline(false);
+                        if(sql.contractManager() || test) {
+                            serverFound = true;
+                            submit.setText("Go Online");
+                            submit.doClick();
+                            ci.setOffline(false);
+                        }else{
+                            JOptionPane.showMessageDialog(null, "This account does not have permission to manage " +
+                                                                "contracts");
+                        }
                     }
                 }
                 break;
@@ -593,8 +607,11 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                         LocalDate.parse(dp.getSelectedDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
                 fullContract.details.deliveryMethod =
                         Objects.requireNonNull(deliveryTypes.getSelectedItem()).toString();
+                fullContract.details.issued = true;
+                fullContract.details.contractor = username;
                 sql.setContractDate(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
                         fullContract.details.contractID);
+                sql.setContractor(fullContract.details.contractID, username);
                 sql.issueContract(fullContract.details.contractID);
                 sql.setDeliveryDate(fullContract.details.deliveryDate, fullContract.details.contractID);
                 sql.setDeliveryMethod(fullContract.details.deliveryMethod, fullContract.details.contractID);
@@ -691,9 +708,10 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         if (e.getSource().equals(ContractInterface.frame)) {
             Log.logLine("Loading built contract");
             ContractInterface.frame.setVisible(false);
+            if(ci.getEdited())
+                JOptionPane.showMessageDialog(this, "Remember to save your contract using the [Save] button.");
             fullContract = ci.getContract();
             if (serverFound) syncWithServer();
-            Log.logLine("");
         }
     }
 

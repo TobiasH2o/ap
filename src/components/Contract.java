@@ -16,10 +16,11 @@ public class Contract {
     public String engineer;
     public boolean quote;
     public boolean issued;
+    public String contractor;
 
     public Contract(String contractID, LocalDate contractDate, String companyName, String address1, String address2,
                     String address3, String postcode, String deliveryMethod, LocalDate deliveryDate, boolean quote,
-                    String engineer, Boolean issued) {
+                    String engineer, Boolean issued, String contractor) {
         this.contractID = contractID;
         this.contractDate = contractDate;
         this.companyName = companyName;
@@ -32,6 +33,7 @@ public class Contract {
         this.engineer = engineer;
         this.quote = quote;
         this.issued = issued;
+        this.contractor = contractor;
     }
 
     public Contract() {
@@ -47,6 +49,7 @@ public class Contract {
         this.engineer = "OTHER";
         this.quote = false;
         this.issued = false;
+        this.contractor = null;
     }
 
     public void clear() {
@@ -62,5 +65,6 @@ public class Contract {
         this.engineer = "OTHER";
         this.quote = false;
         this.issued = false;
+        this.contractor = null;
     }
 }

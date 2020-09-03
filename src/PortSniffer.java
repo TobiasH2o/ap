@@ -10,7 +10,7 @@ public class PortSniffer {
     public PortSniffer() {
     }
 
-    public String searchForServer(String username, String password, int port) {
+    public String searchForServer(String username, String password, int port, boolean test) {
         error = "-";
         try {
             InetAddress localHost = Inet4Address.getLocalHost();
@@ -22,32 +22,34 @@ public class PortSniffer {
             Log.logLine("Password: " + password);
             Log.logLine("Username: " + username);
 
-
-            Log.logLine("checking for server on default");
-            if (quickCheck("192.168.1.245", 3306))
+            if(!test) {
+                Log.logLine("checking for server on default");
                 if (poke("192.168.1.245", username, password, 3306)) return "192.168.1.245";
-            // Build list of IP's
-            ArrayList<String> IPs = new ArrayList<>(255);
-            ArrayList<String> goodIPs = new ArrayList<>(0);
-            for (int i = 0;i < 255;i++) {
-                IPs.add(mask + "." + i);
-            }
-
-            // Removes unavailable IP's
-            IPs.parallelStream().forEach(ip -> {
-                if (quickCheck(ip, port)) {
-                    Log.logLine("IP " + ip);
-                    goodIPs.add(ip);
+                Log.logLine("Failed to connect to default");
+            }else {
+                // Build list of IP's
+                ArrayList<String> IPs = new ArrayList<>(255);
+                ArrayList<String> goodIPs = new ArrayList<>(0);
+                for (int i = 0;i < 255;i++) {
+                    IPs.add(mask + "." + i);
                 }
-            });
 
-            String[] ip = new String[0];
-            ip = goodIPs.toArray(ip);
+                // Removes unavailable IP's
+                IPs.parallelStream().forEach(ip -> {
+                    if (quickCheck(ip, port)) {
+                        Log.logLine("IP " + ip);
+                        goodIPs.add(ip);
+                    }
+                });
 
-            for (String s : ip) {
-                Log.logLine("Checking " + s);
-                if (poke(s, username, password, port)) {
-                    return s;
+                String[] ip = new String[0];
+                ip = goodIPs.toArray(ip);
+
+                for (String s : ip) {
+                    Log.logLine("Checking " + s);
+                    if (poke(s, username, password, port)) {
+                        return s;
+                    }
                 }
             }
         } catch (UnknownHostException | SocketException e) {

@@ -178,8 +178,10 @@ public class SuggestionField implements DocumentListener, KeyListener, FocusList
                         boxes.get(selectedBox).setText(displayValues.get(selectedEntry));
                         for (String i : values) {
                             if (boxes.get(selectedBox).getText().equalsIgnoreCase(i)) {
-                                boxes.get(selectedBox).setText(boxes.get(selectedBox).getText().toUpperCase());
+                                boxes.get(selectedBox).setBackground(new Color(150, 231, 108, 255));
                                 break;
+                            }else{
+                                boxes.get(selectedBox).setBackground(new Color(231, 108, 108, 255));
                             }
                         }
                     }
@@ -196,18 +198,6 @@ public class SuggestionField implements DocumentListener, KeyListener, FocusList
     @Override
     public void keyReleased(KeyEvent e) {
 
-    }
-
-    private boolean isNumeric(String x) {
-        if (x == null) {
-            return false;
-        }
-        try {
-            Double.parseDouble(x);
-        } catch (NumberFormatException e) {
-            return false;
-        }
-        return true;
     }
 
     @Override
@@ -242,8 +232,10 @@ public class SuggestionField implements DocumentListener, KeyListener, FocusList
                 for (String i : values) {
                     if (boxes.get(selectedBox).getText().equalsIgnoreCase(i)) {
                         Log.logLine("Set Values");
-                        boxes.get(selectedBox).setText(boxes.get(selectedBox).getText().toUpperCase());
+                        boxes.get(selectedBox).setBackground(new Color(150, 231, 108, 255));
                         break;
+                    }else {
+                        boxes.get(selectedBox).setBackground(new Color(231, 108, 108, 255));
                     }
                 }
             }

@@ -51,10 +51,11 @@ public class SudoSQL {
                     .map(data -> new Contract(data[0], Convert.getIfDate(data[1]), data[2], data[3], data[4], data[5],
                                               data[6], data[7], Convert.getIfDate(data[8]),
                                               Convert.getBoolean(data[9]),
-                                              data[11], Convert.getBoolean(data[10])))
+                                              data[11], Convert.getBoolean(data[10]), data[11]))
                     .collect(Collectors.toCollection(() -> new ArrayList<>(0)));
         } catch (Exception ignore) {}
         Log.logLine("Loaded contracts");
+        assert contracts != null;
         return contracts.toArray(Contract[]::new);
     }
 
