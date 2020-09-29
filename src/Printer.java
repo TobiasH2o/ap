@@ -659,7 +659,7 @@ public class Printer implements Printable, ActionListener {
         printColumns = new String[]{"Quantity", "0.05", "Description", "0.2"};
         for (HeadingLine chl : fc.contractHeadingLine)
             for (Product pr : fc.products) {
-                if (pr.getStock() && chl.productID.equalsIgnoreCase(pr.getProductID())) {
+                if (pr.getProductType().equalsIgnoreCase("Brought Out and Stock") && chl.productID.equalsIgnoreCase(pr.getProductID())) {
                     printDetails.add(new String[]{"" + chl.quantity, getDesc(pr, chl)});
                     break;
                 }
@@ -741,16 +741,16 @@ public class Printer implements Printable, ActionListener {
         int items = 0;
         ArrayList<String> cats = new ArrayList<>(0);
         String cCat = "";
-        while (items < fc.products.size()) {
+        while (items < fc.contractHeadingLine.size()) {
             for (HeadingLine chl : fc.contractHeadingLine) {
                 for (Product pr : fc.products) {
                     if (chl.productID.equalsIgnoreCase(pr.getProductID())) {
                         if (cCat.equals("") && !cats.contains(pr.getProductType())) {
+                            Log.logLine(pr.getProductType());
                             cCat = pr.getProductType();
                             cats.add(pr.getProductType());
                             if (!pr.getProductType().isEmpty() && !pr.getProductType().equalsIgnoreCase("NULL"))
                                 printDetails.add(new String[]{pr.getProductType()});
-
                         }
                         if (cCat.equals(pr.getProductType())) {
                             if (!pr.getProductType().isEmpty() && !pr.getProductType().equalsIgnoreCase("NULL"))
@@ -763,6 +763,7 @@ public class Printer implements Printable, ActionListener {
             }
             cCat = "";
         }
+        Log.logLine(printDetails.toArray(String[][]::new));
         sumTable = -1;
         printDetails = sort(1, printDetails);
         printDetails = sumDupes(printDetails, new int[]{1}, new int[]{0});

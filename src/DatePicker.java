@@ -142,10 +142,12 @@ public class DatePicker extends JPanel implements ActionListener {
             buildGrid();
         } else if (e.getActionCommand().charAt(0) == 'B') {
             String month = "" + (monthComboBox.getSelectedIndex() + 1);
-            if (month.length() == 1) {
+            String day = "" + e.getActionCommand().replace("B", "");
+            if(day.length() == 1)
+                day = "0" + day;
+            if (month.length() == 1)
                 month = "0" + month;
-            }
-            date = yearComboBox.getSelectedItem() + "-" + month + "-" + e.getActionCommand().replace("B", "");
+            date = yearComboBox.getSelectedItem() + "-" + month + "-" + day;
             Log.logLine("Date selected " + date);
         }
 

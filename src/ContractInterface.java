@@ -366,6 +366,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         desc.clear();
         quant.clear();
         fullContract = fc;
+        Log.logLine("Contractor: " + fc.details.contractor);
         Log.logLine("Contract is selected: " + fc.details.quote);
         quote.setSelected(fc.details.quote);
         contractNumber.setText(fc.details.contractID);
@@ -656,6 +657,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                     c.quote = Convert.getBoolean(cDetails[9]);
                     c.issued = Convert.getBoolean(cDetails[10]);
                     c.engineer = cDetails[11];
+                    c.contractor = cDetails[12];
                     fullContract.setDetails(c);
 
                     String[] heading = data[1].split("~~");
@@ -751,6 +753,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         String deliveryMethod = fullContract.details.deliveryMethod;
         LocalDate deliveryDate = fullContract.details.deliveryDate;
         LocalDate contractDate = fullContract.details.contractDate;
+        String contractor = fullContract.details.contractor;
         fullContract.purge();
         fullContract.details.contractID = contractNumber.getText();
         fullContract.details.engineer = "" + engineer.getSelectedItem();
@@ -764,6 +767,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         fullContract.details.companyName = companyName.getText();
         fullContract.details.quote = quote.isSelected();
         fullContract.details.issued = issued;
+        fullContract.details.contractor = contractor;
         if (saveToEntries(false)) for (Entry entry : entries) {
             headingNumber = fullContract.addHeading(entry.getTitle());
             ID = entry.getID();

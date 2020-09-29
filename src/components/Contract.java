@@ -1,5 +1,7 @@
 package components;
 
+import com.mysql.cj.log.Log;
+
 import java.time.LocalDate;
 
 public class Contract {
@@ -33,6 +35,7 @@ public class Contract {
         this.engineer = engineer;
         this.quote = quote;
         this.issued = issued;
+        System.out.println("Contract(Full) Contractor: " + contractor);
         this.contractor = contractor;
     }
 
@@ -49,7 +52,7 @@ public class Contract {
         this.engineer = "OTHER";
         this.quote = false;
         this.issued = false;
-        this.contractor = null;
+        this.contractor = "";
     }
 
     public void clear() {
@@ -65,6 +68,6 @@ public class Contract {
         this.engineer = "OTHER";
         this.quote = false;
         this.issued = false;
-        this.contractor = null;
+        this.contractor = "";
     }
 }

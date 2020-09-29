@@ -241,6 +241,13 @@ public class UI extends JPanel implements ActionListener, WindowListener {
             fm.saveFile("Data/SyncDate.txt", new String[]{"0001/01/01"});
         }
 
+        //google is our god
+        if(!testing)
+            Log.setOutput(filePath + "\\errorLogs\\" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy" +
+                                                                                                              "-MM" +
+                                                                                                           "-dd-hh-mm")) + ".txt");
+        Log.logLine("====================================Logging Started====================================");
+
         submit.doClick();
 
     }
@@ -367,6 +374,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         c.quote = Convert.getBoolean(cDetails[9]);
         c.issued = Convert.getBoolean(cDetails[10]);
         c.engineer = cDetails[11];
+        c.contractor = cDetails[12];
         fullContract.setDetails(c);
 
         String[] heading = data[1].split("~~");

@@ -27,6 +27,7 @@ public class FileManager {
         File f1 = new File(filePath + "\\Data\\");
         File f2 = new File(filePath + "\\Tables\\");
         File f3 = new File(filePath + "\\Data\\Contracts\\");
+        File f4 = new File(filePath + "\\errorLogs\\");
         if (!f1.exists() || !f1.isDirectory()) {
             Log.logLine("Making Directory " + f1.getName());
             if (!f1.mkdirs()) JOptionPane.showMessageDialog(null, "Failed to create required directory \\Data\\");
@@ -39,6 +40,11 @@ public class FileManager {
             Log.logLine("Making Directory " + f3.getName());
             if (!f3.mkdirs())
                 JOptionPane.showMessageDialog(null, "Failed to create required directory " + "\\Data\\Contracts\\");
+        }
+        if (!f4.exists() || !f4.isDirectory()) {
+            Log.logLine("Making Directory " + f4.getName());
+            if (!f4.mkdirs())
+                JOptionPane.showMessageDialog(null, "Failed to create required directory " + "\\Data\\errorLogs\\");
         }
     }
 
@@ -212,7 +218,8 @@ public class FileManager {
             saveValue.add(new String[]{contract.details.contractID, "" +
                                                                     contract.details.contractDate, contract.details.companyName, contract.details.address1, contract.details.address2, contract.details.address3, contract.details.postcode, contract.details.deliveryMethod,
                     "" + contract.details.deliveryDate,
-                    "" + contract.details.quote, "" + contract.details.issued, contract.details.engineer});
+                    "" + contract.details.quote, "" + contract.details.issued, contract.details.engineer,
+                    contract.details.contractor});
 
             for (ContractHeading ch : contract.contractHeadings) {
                 tempArr.add(ch.headingID + "%50" + ch.contractID + "%50" + ch.headingTitle);

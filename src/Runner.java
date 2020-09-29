@@ -10,8 +10,8 @@ public class Runner {
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }
-        String version = "1.3.6.5";
-        boolean testing = true;
+        String version = "1.3.8.0";
+        boolean testing = false;
         JFrame frame = new JFrame();
         FileManager fm = new FileManager();
         frame.setTitle(version);

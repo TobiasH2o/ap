@@ -16,7 +16,7 @@ public class SudoSQL {
                                            HeadingLine[] headingLines, Product[] products, Qproduct[] qproducts) {
         FullContract fc = new FullContract();
         fc.setDetails(contract);
-
+        Log.logLine("SudoSQL-Contractor " + contract.contractor);
         // Loads each Contract heading
         for (ContractHeading contractHeading : contractHeadings)
             // Comps each heading to contract ID
@@ -51,7 +51,7 @@ public class SudoSQL {
                     .map(data -> new Contract(data[0], Convert.getIfDate(data[1]), data[2], data[3], data[4], data[5],
                                               data[6], data[7], Convert.getIfDate(data[8]),
                                               Convert.getBoolean(data[9]),
-                                              data[11], Convert.getBoolean(data[10]), data[11]))
+                                              data[11], Convert.getBoolean(data[10]), data[12]))
                     .collect(Collectors.toCollection(() -> new ArrayList<>(0)));
         } catch (Exception ignore) {}
         Log.logLine("Loaded contracts");

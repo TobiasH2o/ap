@@ -1,8 +1,21 @@
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+
 import static java.lang.StackWalker.Option.RETAIN_CLASS_REFERENCE;
 
 public class Log extends Thread{
 
     public static boolean ENABLED = true;
+
+    public static void setOutput(String filePath){
+        FileManager.checkFile(filePath);
+        try {
+            System.setOut(new PrintStream(new FileOutputStream(filePath)));
+        }catch(FileNotFoundException e){
+            e.printStackTrace();
+        }
+    }
 
     public static void logLine(java.io.Serializable a){
         StackWalker walker = StackWalker.getInstance(RETAIN_CLASS_REFERENCE);
