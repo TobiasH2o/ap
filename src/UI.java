@@ -241,7 +241,6 @@ public class UI extends JPanel implements ActionListener, WindowListener {
             fm.saveFile("Data/SyncDate.txt", new String[]{"0001/01/01"});
         }
 
-        //google is our god
         if(!testing)
             Log.setOutput(filePath + "\\errorLogs\\" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy" +
                                                                                                               "-MM" +
