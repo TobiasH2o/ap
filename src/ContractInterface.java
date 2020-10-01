@@ -625,19 +625,21 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                     su = false;
                     JOptionPane.showMessageDialog(frame, "First 5 digit of the contractID must be numeric");
                 } else if (offline) {
-                    edited = false;
                     su = false;
-                    JFileChooser fd = new JFileChooser();
-                    fd.setDialogTitle("Save Contract");
-                    fd.setCurrentDirectory(new File(FileManager.filePath + "\\Data\\Contracts"));
-                    fd.setSelectedFile(new File(
-                            fd.getCurrentDirectory().getPath() + "/Contract_" + fullContract.details.contractID));
-                    if (fd.showDialog(this, "Save Contract") == JFileChooser.APPROVE_OPTION) {
-                        if (!fd.getSelectedFile().getPath().endsWith(".cot"))
-                            fm.saveContract(fullContract, new File(fd.getSelectedFile().getPath() + ".cot"));
-                        else fm.saveContract(fullContract, new File(fd.getSelectedFile().getPath()));
-                    }
-                    JOptionPane.showMessageDialog(frame, "Saved contract.");
+                    JOptionPane.showMessageDialog(frame, "Saving offline is currently disabled");
+//                    edited = false;
+//                    su = false;
+//                    JFileChooser fd = new JFileChooser();
+//                    fd.setDialogTitle("Save Contract");
+//                    fd.setCurrentDirectory(new File(FileManager.filePath + "\\Data\\Contracts"));
+//                    fd.setSelectedFile(new File(
+//                            fd.getCurrentDirectory().getPath() + "/Contract_" + fullContract.details.contractID));
+//                    if (fd.showDialog(this, "Save Contract") == JFileChooser.APPROVE_OPTION) {
+//                        if (!fd.getSelectedFile().getPath().endsWith(".cot"))
+//                            fm.saveContract(fullContract, new File(fd.getSelectedFile().getPath() + ".cot"));
+//                        else fm.saveContract(fullContract, new File(fd.getSelectedFile().getPath()));
+//                    }
+//                    JOptionPane.showMessageDialog(frame, "Saved contract.");
                 } else {
                     edited = false;
                     message = sql.pushContract(fullContract);
