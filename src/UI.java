@@ -405,11 +405,13 @@ public class UI extends JPanel implements ActionListener, WindowListener {
             }
         }
 
-        for (String s : qProducts) {
-            qproducts.add(new Qproduct((int) Convert.getIfNumeric(s.split("%50")[0]),
-                    (int) Convert.getIfNumeric(s.split("%50")[1]), Convert.getIfNumeric(s.split("%50")[2]),
-                    s.split("%50")[3]));
-        }
+        if(qProducts.length > 0)
+            if(qProducts[0].length() > 0)
+                for (String s : qProducts) {
+                    qproducts.add(new Qproduct((int) Convert.getIfNumeric(s.split("%50")[0]),
+                            (int) Convert.getIfNumeric(s.split("%50")[1]), Convert.getIfNumeric(s.split("%50")[2]),
+                            s.split("%50")[3]));
+                }
 
 
         fullContract.contractHeadings = contractHeading;
@@ -630,21 +632,22 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                 makeIssued.setVisible(true);
                 break;
             case "print":
+                fullContract = ci.getContract();
                 makeIssued.setVisible(false);
                 if (event.split(",")[1].equalsIgnoreCase("issue")) {
                     if (serverFound) {
-                        if (ci.getContract().details.issued) JOptionPane
+                        if (fullContract.details.issued) JOptionPane
                                 .showMessageDialog(this, "This contract has already been issued.", "DUPLICATE ISSUE",
                                         JOptionPane.WARNING_MESSAGE);
-                        else if (ci.getContract().details.quote) JOptionPane
+                        else if (fullContract.details.quote) JOptionPane
                                 .showMessageDialog(this, "Can not issue a quote.", "QUOTE ISSUE",
                                         JOptionPane.WARNING_MESSAGE);
                         else dateDialog.setVisible(true);
                     } else JOptionPane.showMessageDialog(this, "You can not issue a Contract while offline.");
                 } else {
-                    printer.updateContract(ci.getContract());
+                    printer.updateContract(fullContract);
                     if (printer.gotContract()) {
-                        if (ci.getContract().details.issued)
+                        if (fullContract.details.issued)
                             JOptionPane.showMessageDialog(this, "This Contract has been issued.");
 
                         printer.setAllPrints(false);

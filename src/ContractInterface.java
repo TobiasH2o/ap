@@ -39,6 +39,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
     private final ArrayList<Double[]> costs = new ArrayList<>(0);
     private final FileManager fm;
     private final SQLInterface sql = new SQLInterface();
+    private String engineerName = "OTHER";
     private Boolean offline = true;
     private boolean issued = false;
     private boolean edited = false;
@@ -211,6 +212,25 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
 
     }
 
+    public void checkBoxes(){
+        for(int i = 0; i < idCont.getComponentCount(); i++){
+            checkBox(i);
+        }
+    }
+
+    public void checkBox(int i){
+        idCont.getComponent(i).setBackground(new Color(231, 108, 108, 255));
+        if(isValidCode(((HintTextField)idCont.getComponent(i)).getText())){
+            idCont.getComponent(i).setBackground(new Color(150, 231, 108, 255));
+        }
+    }
+
+    public boolean isValidCode(String code){
+        for (String s : productCode)
+            if (s.equals(code))
+                return true;
+        return false;
+    }
 
     public void showMenu() {
         if (issued) {
@@ -238,6 +258,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         descCont.revalidate();
         centerCont.revalidate();
         dataSection.repaint();
+        checkBoxes();
     }
 
     public FullContract getContract() {
@@ -262,6 +283,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         sectionHeading.setText(entries.get(heading).getTitle());
         sectionHeading.setHint("(" + (heading + 1) + "/" + entries.size() + ")");
         sectionHeading.setEditable(save.isEnabled());
+        checkBoxes();
     }
 
     public boolean saveToEntries(boolean force) {
@@ -280,7 +302,6 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                 }
             } else {
                 if (!force) if (!ID.get(i).getText().trim().equals("") || !desc.get(i).getText().trim().equals("")) {
-                    JOptionPane.showMessageDialog(this, "Invalid quantity", "ERROR", JOptionPane.ERROR_MESSAGE);
                     rID[i - skips] = ID.get(i).getText();
                     rDesc[i - skips] = desc.get(i).getText();
                     rQuant[i - skips] = 1;
@@ -356,6 +377,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         }
         if (engineers.length == 0) engineer.addItem("OTHER");
         engineer.setSelectedIndex(0);
+        setEngi(fullContract.details.engineer);
     }
 
     public void setContractDetails(FullContract fc) {
@@ -495,6 +517,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
     public void refresh() {
         saveToEntries(true);
         loadFromEntries();
+        checkBoxes();
         redraw();
     }
 
@@ -503,6 +526,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         String command = e.getActionCommand();
 
         switch (command) {
+
 
             case "next":
                 if (!issued) {
@@ -523,6 +547,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                         loadFromEntries();
                     }
                 }
+                checkBoxes();
                 redraw();
                 break;
 
@@ -535,6 +560,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                     }
                     redraw();
                 }
+                checkBoxes();
                 break;
 
             case "newItem":
@@ -756,7 +782,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         String contractor = fullContract.details.contractor;
         fullContract.purge();
         fullContract.details.contractID = contractNumber.getText();
-        fullContract.details.engineer = "" + engineer.getSelectedItem();
+        fullContract.details.engineer = engineer.getSelectedItem() + "";
         fullContract.details.address1 = address1.getText();
         fullContract.details.address2 = address2.getText();
         fullContract.details.address3 = address3.getText();
@@ -886,6 +912,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                     }
                     ((HintTextField) quantCont.getComponent(i)).grabFocus();
                     Log.logLine("Got Focus");
+                    checkBox(i);
                     break;
                 }
                 if (e.getSource().equals(quantCont.getComponent(i))) {
