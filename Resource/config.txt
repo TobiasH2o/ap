@@ -1,4 +1,4 @@
-version=1.3.8.5
-testing=1
+version=1.3.9.0
+testing=0
 log=0
-offlineMode=0
+offlineMode=1
