@@ -47,12 +47,13 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
     private int heading = 0;
     private String[] productCode = new String[0];
     private final SuggestionField sf = new SuggestionField(productCode, frame);
+    private final boolean offlineMode;
     private Product[] products = new Product[0];// Contains all products available
 
-    public ContractInterface() {
+    public ContractInterface(boolean offlineMode) {
 
         fm = new FileManager();
-
+        this.offlineMode = offlineMode;
         entries.add(new Entry());
 
         contractNumber.setToolTipText("Contract number");
@@ -625,21 +626,24 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                     su = false;
                     JOptionPane.showMessageDialog(frame, "First 5 digit of the contractID must be numeric");
                 } else if (offline) {
-                    su = false;
-                    JOptionPane.showMessageDialog(frame, "Saving offline is currently disabled");
-//                    edited = false;
-//                    su = false;
-//                    JFileChooser fd = new JFileChooser();
-//                    fd.setDialogTitle("Save Contract");
-//                    fd.setCurrentDirectory(new File(FileManager.filePath + "\\Data\\Contracts"));
-//                    fd.setSelectedFile(new File(
-//                            fd.getCurrentDirectory().getPath() + "/Contract_" + fullContract.details.contractID));
-//                    if (fd.showDialog(this, "Save Contract") == JFileChooser.APPROVE_OPTION) {
-//                        if (!fd.getSelectedFile().getPath().endsWith(".cot"))
-//                            fm.saveContract(fullContract, new File(fd.getSelectedFile().getPath() + ".cot"));
-//                        else fm.saveContract(fullContract, new File(fd.getSelectedFile().getPath()));
-//                    }
-//                    JOptionPane.showMessageDialog(frame, "Saved contract.");
+                    if(offlineMode) {
+                        su = false;
+                        JOptionPane.showMessageDialog(frame, "Saving offline is currently disabled");
+                    }else {
+                        edited = false;
+                        su = false;
+                        JFileChooser fd = new JFileChooser();
+                        fd.setDialogTitle("Save Contract");
+                        fd.setCurrentDirectory(new File(FileManager.filePath + "\\Data\\Contracts"));
+                        fd.setSelectedFile(new File(
+                                fd.getCurrentDirectory().getPath() + "/Contract_" + fullContract.details.contractID));
+                        if (fd.showDialog(this, "Save Contract") == JFileChooser.APPROVE_OPTION) {
+                            if (!fd.getSelectedFile().getPath().endsWith(".cot"))
+                                fm.saveContract(fullContract, new File(fd.getSelectedFile().getPath() + ".cot"));
+                            else fm.saveContract(fullContract, new File(fd.getSelectedFile().getPath()));
+                        }
+                        JOptionPane.showMessageDialog(frame, "Saved contract.");
+                    }
                 } else {
                     edited = false;
                     message = sql.pushContract(fullContract);

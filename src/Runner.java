@@ -10,13 +10,10 @@ public class Runner {
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }
-        String version = "1.3.8.0";
-        boolean testing = false;
         JFrame frame = new JFrame();
         FileManager fm = new FileManager();
-        frame.setTitle(version);
         frame.setIconImage(fm.loadImage("Images/IconLogo.png"));
-        UI ui = new UI(frame, version, testing);
+        UI ui = new UI(frame);
         frame.setSize(500, 500);
         frame.setResizable(false);
         frame.setLocationRelativeTo(null);

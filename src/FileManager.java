@@ -7,6 +7,7 @@ import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class FileManager {
 
@@ -50,20 +51,23 @@ public class FileManager {
 
     public FileManager() {}
 
-    public static void checkFile(String filePath) {
+    public static boolean checkFile(String filePath) {
         if (!filePath.endsWith(".txt")) filePath += ".txt";
         File f = new File(filePath);
-        Log.logLine("Checking file " + filePath);
+        Log.logLine("Checking file " + f);
         if (!f.exists()) {
             Log.logLine("Can't discover file");
             try {
+                Log.logLine("Creating File " + f.getAbsolutePath());
                 if (!f.createNewFile()) JOptionPane
                         .showMessageDialog(null, "Failed to create required file:\n" + f.getAbsolutePath(),
                                 "CRITICAL ERROR", JOptionPane.WARNING_MESSAGE);
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            return false;
         }
+        return true;
     }
 
     static private void hideFile(File file) {
@@ -123,7 +127,7 @@ public class FileManager {
         }
     }
 
-    public void saveFile(String file, String[] data) {
+    public void saveFile(String file, String[] data, boolean full) {
         try {
             if (!file.endsWith(".txt")) file += ".txt";
             File f = new File(filePath + "\\" + file);
@@ -132,6 +136,8 @@ public class FileManager {
             bw = new BufferedWriter(fw);
             for (String dat : data) {
                 bw.append(dat.replaceAll("\n", "").replaceAll("\r", ""));
+                if(full)
+                    bw.newLine();
             }
             bw.close();
         } catch (IOException e) {
@@ -262,4 +268,26 @@ public class FileManager {
             JOptionPane.showMessageDialog(null, "Failed to remove file:\n" + f.getAbsolutePath(),
                     "MINOR ERROR", JOptionPane.WARNING_MESSAGE);
     }
+
+    public boolean configBoolean(String entry) {
+        return Convert.getBoolean(configString(entry));
+    }
+
+    public String configString(String entry){
+        try{
+            fr = new FileReader(filePath + "\\config.txt");
+            br = new BufferedReader(fr);
+            AtomicReference<String> rValue = new AtomicReference<>();
+            br.lines().forEachOrdered(item ->{
+                String cat = item.split("=")[0];
+                if(cat.equals(entry))
+                    rValue.set(item.split("=")[1]);
+            });
+            return rValue.get();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return "0";
+    }
+
 }

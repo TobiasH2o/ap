@@ -71,6 +71,7 @@ public class PortSniffer {
             return true;
         } catch (IOException exception) {
             // Return false if connection fails
+            Log.logLine(address + " : FAIL");
             return false;
         }
     }

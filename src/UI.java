@@ -8,10 +8,9 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.awt.print.PrinterJob;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -74,13 +73,9 @@ public class UI extends JPanel implements ActionListener, WindowListener {
     private String password = "";
     private final String version;
     private final boolean test;
+    private final boolean offlineMode;
 
-    public UI(JFrame frame, String version, boolean testing) {
-
-        test = testing;
-        if(test)
-            JOptionPane.showMessageDialog(frame, "This is a testing branch of the program");
-        this.version = version;
+    public UI(JFrame frame) {
 
         String myDocuments = null;
         JButton confirmDate = new JButton("Confirm Delivery Info");
@@ -125,10 +120,31 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         filePath = myDocuments + "\\apData";
 
         fm = new FileManager(filePath);
-        ci = new ContractInterface();
 
         logo = fm.loadImage("/Images/Logo.png");
         printer = new Printer(frame);
+
+        if(!new File(filePath + "\\config.txt").exists()){
+            try {
+                new File(filePath + "\\config.txt").createNewFile();
+                File f = new File(this.getClass().getResource("config.txt").toURI());
+                FileReader fr = new FileReader(f);
+                BufferedReader br = new BufferedReader(fr);
+                ArrayList<String> returnArray = new ArrayList<>(0);
+                br.lines().forEach(returnArray::add);
+                br.close();
+                Log.logLine(returnArray.toArray(new String[]{}));
+                fm.saveFile("\\config.txt", returnArray.toArray(new String[]{}), true);
+                this.getClass().getResourceAsStream("config.txt").readAllBytes();
+            } catch (IOException | URISyntaxException e) {
+                e.printStackTrace();
+            }
+        }
+
+        test = fm.configBoolean("testing");
+        version = fm.configString("version");
+        offlineMode = fm.configBoolean("offlineMode");
+        ci = new ContractInterface(offlineMode);
 
         sp.frame.addWindowListener(this);
         ContractInterface.frame.addWindowListener(this);
@@ -233,15 +249,16 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                 JOptionPane.showMessageDialog(this,
                         "ALERT: It has been " + getDayDiff(oDate) + " days since you were last " +
                         "online. Please sync with the database.");
-                fm.deleteDir(filePath);
+                fm.deleteDir(filePath + "\\Data");
+                fm.deleteDir(filePath + "\\Tables");
             }
         } else {
             JOptionPane
                     .showMessageDialog(this, "ALERT: Your database is empty. Please sync it with the central database");
-            fm.saveFile("Data/SyncDate.txt", new String[]{"0001/01/01"});
+            fm.saveFile("Data/SyncDate.txt", new String[]{"0001/01/01"}, false);
         }
 
-        if(!testing)
+        if(fm.configBoolean("log"))
             Log.setOutput(filePath + "\\errorLogs\\" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy" +
                                                                                                               "-MM" +
                                                                                                            "-dd-hh-mm")) + ".txt");
@@ -291,7 +308,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                 updateLoadBar();
             }
 
-            fm.saveFile("\\Data\\uploadBuffer.txt", new String[]{});
+            fm.saveFile("\\Data\\uploadBuffer.txt", new String[]{}, false);
 
             File[] contracts = new File(filePath + "\\Data\\Contracts\\").listFiles();
             if (contracts != null && contracts.length > 0) {
