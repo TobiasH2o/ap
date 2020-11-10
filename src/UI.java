@@ -300,8 +300,9 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         InputStreamReader sr = new InputStreamReader(in);
         BufferedReader br = new BufferedReader(sr);
         try {
-            return br.readLine().split("=")[0];
-        }catch(Exception ignored) {
+            return br.readLine().split("=")[1];
+        }catch(Exception e) {
+            Log.logLine(e);
             return "";
         }
     }
