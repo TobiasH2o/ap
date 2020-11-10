@@ -149,7 +149,6 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         ContractInterface.frame.addWindowListener(this);
 
         submit.addActionListener(this);
-        //noinspection SpellCheckingInspection
         submit.setActionCommand("initialsync");
         submit.setFocusPainted(false);
 
@@ -239,29 +238,9 @@ public class UI extends JPanel implements ActionListener, WindowListener {
 
         repaint();
 
+        checkDates();
 
-        String oDate;
-        if (fm.readFile("Data/SyncDate.txt").length > 0) {
-            oDate = fm.readFile("Data/SyncDate.txt")[0].replaceAll("~~", "");
-            Log.logLine(oDate);
-            if (getDayDiff(oDate) > 7) {
-                JOptionPane.showMessageDialog(this,
-                        "ALERT: It has been " + getDayDiff(oDate) + " days since you were last " +
-                                "online. Please sync with the database.");
-                fm.deleteDir(filePath + "\\Data");
-                fm.deleteDir(filePath + "\\Tables");
-            }
-        } else {
-            JOptionPane
-                    .showMessageDialog(this, "ALERT: Your database is empty. Please sync it with the central database");
-            fm.saveFile("Data/SyncDate.txt", new String[]{"0001/01/01"}, false);
-        }
-
-        if (fm.configBoolean("log"))
-            Log.setOutput(filePath + "\\errorLogs\\" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy" +
-                    "-MM" +
-                    "-dd-hh-mm")) + ".txt");
-        Log.logLine("====================================Logging Started====================================");
+        checkLogging();
 
         submit.doClick();
 
@@ -285,6 +264,34 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         // Logo
         g2.drawImage(logo, 0, this.getHeight() - southBox.getHeight() - 25 - logo.getHeight(), this);
 
+    }
+
+    private void checkLogging(){
+        if (fm.configBoolean("log"))
+            Log.setOutput(filePath + "\\errorLogs\\" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy" +
+                    "-MM" +
+                    "-dd-hh-mm")) + ".txt");
+        Log.logLine("====================================Logging Started====================================");
+
+    }
+
+    private void checkDates(){
+        String oDate;
+        if (fm.readFile("Data/SyncDate.txt").length > 0) {
+            oDate = fm.readFile("Data/SyncDate.txt")[0].replaceAll("~~", "");
+            Log.logLine(oDate);
+            if (getDayDiff(oDate) > 7) {
+                JOptionPane.showMessageDialog(this,
+                        "ALERT: It has been " + getDayDiff(oDate) + " days since you were last " +
+                                "online. Please sync with the database.");
+                fm.deleteDir(filePath + "\\Data");
+                fm.deleteDir(filePath + "\\Tables");
+            }
+        } else {
+            JOptionPane
+                    .showMessageDialog(this, "ALERT: Your database is empty. Please sync it with the central database");
+            fm.saveFile("Data/SyncDate.txt", new String[]{"0001/01/01"}, false);
+        }
     }
 
     private String getCurrentVersion(){
