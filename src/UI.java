@@ -286,6 +286,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                                 "online. Please sync with the database.");
                 fm.deleteDir(filePath + "\\Data");
                 fm.deleteDir(filePath + "\\Tables");
+                fm.buildDirectory(filePath);
             }
         } else {
             JOptionPane

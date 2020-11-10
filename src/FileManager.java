@@ -19,6 +19,12 @@ public class FileManager {
 
     public FileManager(String filePath) {
         FileManager.filePath = filePath;
+        buildDirectory(filePath);
+    }
+
+    public FileManager() {}
+
+    public void buildDirectory(String filePath){
         File f = new File(filePath);
         if (!f.exists() || !f.isDirectory()) {
             Log.logLine("Making Directory " + f.getName());
@@ -48,8 +54,6 @@ public class FileManager {
                 JOptionPane.showMessageDialog(null, "Failed to create required directory " + "\\Data\\errorLogs\\");
         }
     }
-
-    public FileManager() {}
 
     public static boolean checkFile(String filePath) {
         if (!filePath.endsWith(".txt")) filePath += ".txt";
