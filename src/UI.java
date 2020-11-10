@@ -132,7 +132,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
             }
         }
 
-        if(getCurrentVersion().equalsIgnoreCase(fm.configString("version")))
+        if(!getCurrentVersion().equalsIgnoreCase(fm.configString("version")))
             try {
                 new File(filePath + "\\config.txt").delete();
                 createConfigFile();
