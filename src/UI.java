@@ -126,20 +126,19 @@ public class UI extends JPanel implements ActionListener, WindowListener {
 
         if (!new File(filePath + "\\config.txt").exists()) {
             try {
-                new File(filePath + "\\config.txt").createNewFile();
-                File f = new File(this.getClass().getResource("config.txt").toURI());
-                FileReader fr = new FileReader(f);
-                BufferedReader br = new BufferedReader(fr);
-                ArrayList<String> returnArray = new ArrayList<>(0);
-                br.lines().forEach(returnArray::add);
-                br.close();
-                Log.logLine(returnArray.toArray(new String[]{}));
-                fm.saveFile("\\config.txt", returnArray.toArray(new String[]{}), true);
-                this.getClass().getResourceAsStream("config.txt").readAllBytes();
-            } catch (IOException | URISyntaxException e) {
+                createConfigFile();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+
+        if(getCurrentVersion().equalsIgnoreCase(fm.configString("version")))
+            try {
+                new File(filePath + "\\config.txt").delete();
+                createConfigFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
         test = fm.configBoolean("testing");
         version = fm.configString("version");
@@ -286,6 +285,30 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         // Logo
         g2.drawImage(logo, 0, this.getHeight() - southBox.getHeight() - 25 - logo.getHeight(), this);
 
+    }
+
+    private String getCurrentVersion(){
+        InputStream in = this.getClass().getResourceAsStream("config.txt");
+        InputStreamReader sr = new InputStreamReader(in);
+        BufferedReader br = new BufferedReader(sr);
+        try {
+            return br.readLine().split("=")[0];
+        }catch(Exception ignored) {
+            return "";
+        }
+    }
+
+    private void createConfigFile() throws IOException {
+        new File(filePath + "\\config.txt").createNewFile();
+        InputStream in = this.getClass().getResourceAsStream("config.txt");
+        InputStreamReader sr = new InputStreamReader(in);
+        BufferedReader br = new BufferedReader(sr);
+        ArrayList<String> returnArray = new ArrayList<>(0);
+        br.lines().forEach(returnArray::add);
+        br.close();
+        Log.logLine(returnArray.toArray(new String[]{}));
+        fm.saveFile("\\config.txt", returnArray.toArray(new String[]{}), true);
+        this.getClass().getResourceAsStream("config.txt").readAllBytes();
     }
 
     private void uploadData() {
