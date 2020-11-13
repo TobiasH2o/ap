@@ -132,7 +132,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
             }
         }
 
-        if(!getCurrentVersion().equalsIgnoreCase(fm.configString("version")))
+        if (!getCurrentVersion().equalsIgnoreCase(fm.configString("version")))
             try {
                 new File(filePath + "\\config.txt").delete();
                 createConfigFile();
@@ -266,7 +266,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
 
     }
 
-    private void checkLogging(){
+    private void checkLogging() {
         if (fm.configBoolean("log"))
             Log.setOutput(filePath + "\\errorLogs\\" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy" +
                     "-MM" +
@@ -275,7 +275,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
 
     }
 
-    private void checkDates(){
+    private void checkDates() {
         String oDate;
         if (fm.readFile("Data/SyncDate.txt").length > 0) {
             oDate = fm.readFile("Data/SyncDate.txt")[0].replaceAll("~~", "");
@@ -295,13 +295,13 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         }
     }
 
-    private String getCurrentVersion(){
+    private String getCurrentVersion() {
         InputStream in = this.getClass().getResourceAsStream("config.txt");
         InputStreamReader sr = new InputStreamReader(in);
         BufferedReader br = new BufferedReader(sr);
         try {
             return br.readLine().split("=")[1];
-        }catch(Exception e) {
+        } catch (Exception e) {
             Log.logLine(e);
             return "";
         }
@@ -571,6 +571,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                 fullContract = SudoSQL.getContract(contract, contractHeadings, headingLines, products, qProducts);
             }
         ci.setContractDetails(fullContract);
+        ci.showMenu();
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -637,6 +638,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
             case "makeContract":
                 // Displays Contract building interface to the user
                 ci.setContractDetails(fullContract);
+                ci.showMenu();
                 break;
 
             //noinspection SpellCheckingInspection
@@ -655,6 +657,11 @@ public class UI extends JPanel implements ActionListener, WindowListener {
 
                 // Loads data stored locally
                 loadData();
+
+                if (new File(filePath + "\\Data\\Contracts\\backupContract.cot").exists()) {
+                    ci.loadContract(new File(filePath + "\\Data\\Contracts\\backupContract.cot"));
+                    fullContract = ci.getContract();
+                }
 
                 submit.setActionCommand("submit");
                 submit.setText("Connect Server");
@@ -772,6 +779,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
             if (ci.getEdited())
                 JOptionPane.showMessageDialog(this, "Remember to save your contract using the [Save] button.");
             fullContract = ci.getContract();
+            fm.backupContract(fullContract);
             if (serverFound) syncWithServer();
         }
     }

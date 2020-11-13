@@ -24,6 +24,10 @@ public class FileManager {
 
     public FileManager() {}
 
+    public void backupContract(FullContract fc){
+        saveContract(fc, new File(filePath + "\\Data\\Contracts\\backupContract.cot"));
+    }
+
     public void buildDirectory(String filePath){
         File f = new File(filePath);
         if (!f.exists() || !f.isDirectory()) {

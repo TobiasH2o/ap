@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 
-public class ContractInterface extends JPanel implements ActionListener, KeyListener{
+public class ContractInterface extends JPanel implements ActionListener, KeyListener {
 
     public static final JFrame frame = new JFrame();
     private final HintTextField contractNumber = new HintTextField("Contract Number", HintTextField.CENTER_HIDDEN);
@@ -213,20 +213,20 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
 
     }
 
-    public void checkBoxes(){
-        for(int i = 0; i < idCont.getComponentCount(); i++){
+    public void checkBoxes() {
+        for (int i = 0; i < idCont.getComponentCount(); i++) {
             checkBox(i);
         }
     }
 
-    public void checkBox(int i){
+    public void checkBox(int i) {
         idCont.getComponent(i).setBackground(new Color(231, 108, 108, 255));
-        if(isValidCode(((HintTextField)idCont.getComponent(i)).getText())){
+        if (isValidCode(((HintTextField) idCont.getComponent(i)).getText())) {
             idCont.getComponent(i).setBackground(new Color(150, 231, 108, 255));
         }
     }
 
-    public boolean isValidCode(String code){
+    public boolean isValidCode(String code) {
         for (String s : productCode)
             if (s.equals(code))
                 return true;
@@ -243,12 +243,22 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         frame.setVisible(true);
     }
 
+    public void hideMenu() {
+        if (issued) {
+            disableEdits();
+        } else {
+            enableEdits();
+        }
+        refresh();
+        frame.setVisible(false);
+    }
+
     public void redraw() {
         idCont.removeAll();
         quantCont.removeAll();
         descCont.removeAll();
         sf.purge();
-        for (int i = 0;i < ID.size();i++) {
+        for (int i = 0; i < ID.size(); i++) {
             idCont.add(ID.get(i));
             quantCont.add(quant.get(i));
             descCont.add(desc.get(i));
@@ -278,7 +288,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         ID.clear();
         desc.clear();
         quant.clear();
-        for (int i = 0;i < idata.length;i++) {// Storing locally reduces load times ~50x
+        for (int i = 0; i < idata.length; i++) {// Storing locally reduces load times ~50x
             addField(idata[i], ddata[i], "" + qdata[i]);
         }
         sectionHeading.setText(entries.get(heading).getTitle());
@@ -292,7 +302,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         String[] rDesc = new String[ID.size()];
         int[] rQuant = new int[ID.size()];
         int skips = 0;
-        for (int i = 0;i < ID.size();i++) {
+        for (int i = 0; i < ID.size(); i++) {
             if (Convert.isNumeric(quant.get(i).getText())) {
                 if (Convert.getIfNumeric(quant.get(i).getText()) > 0 && (!ID.get(i).getText().isEmpty())) {
                     rID[i - skips] = ID.get(i).getText();
@@ -314,7 +324,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         String[] tmpID = new String[rID.length - skips];
         String[] tmpDesc = new String[rID.length - skips];
         int[] tmpQuant = new int[rID.length - skips];
-        for (int i = 0;i < tmpID.length;i++) {
+        for (int i = 0; i < tmpID.length; i++) {
             tmpID[i] = rID[i];
             tmpDesc[i] = rDesc[i];
             tmpQuant[i] = rQuant[i];
@@ -342,7 +352,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
     public void addCost(int pos, double cost) {
         Double[] toAdd = new Double[]{(double) pos, cost};
         boolean added = false;
-        for (int i = 0;i < costs.size();i++) {
+        for (int i = 0; i < costs.size(); i++) {
             if (costs.get(i)[0].equals(toAdd[0])) {
                 costs.set(i, toAdd);
                 added = true;
@@ -355,10 +365,10 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
     }
 
     public ArrayList<Double[]> cleanCosts(ArrayList<Double[]> c, String[] t) {
-        for (int i = 0;i < c.size();i++) {
+        for (int i = 0; i < c.size(); i++) {
             if (c.get(i)[0] < t.length) {
                 if (!(t[c.get(i)[0].intValue()].equalsIgnoreCase("QL") ||
-                      t[c.get(i)[0].intValue()].equalsIgnoreCase("QP"))) {
+                        t[c.get(i)[0].intValue()].equalsIgnoreCase("QP"))) {
                     c.remove(i);
                     i--;
                 }
@@ -401,7 +411,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         setEngi(fc.details.engineer);
         String description;
         Log.logLine("================================Started searching for Contract " +
-                    "details================================");
+                "details================================");
         for (ContractHeading contractHeading : fc.contractHeadings) {
             sectionHeading.setText(contractHeading.headingTitle);
             for (HeadingLine contractHeadingLine : fc.contractHeadingLine) {
@@ -433,14 +443,13 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         } else {
             enableEdits();
         }
-
-        showMenu();
+        refresh();
         Log.logLine("Finished Loading");
     }
 
     private void setEngi(String engy) {
         boolean add = true;
-        for (int i = 0;i < engineer.getItemCount();i++) {
+        for (int i = 0; i < engineer.getItemCount(); i++) {
             if (engineer.getItemAt(i).equals(engy)) {
                 add = false;
                 break;
@@ -539,7 +548,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                         heading++;
                         if (heading >= entries.size()) entries.add(new Entry());
                         loadFromEntries();
-                        if(sectionHeading.getText().isEmpty())
+                        if (sectionHeading.getText().isEmpty())
                             sectionHeading.setText("HEADING " + heading);
                     }
                 } else {
@@ -565,7 +574,9 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                 break;
 
             case "newItem":
-                addField("", "", "");
+                if (ID.size() < 20) addField("", "", "");
+                else
+                    JOptionPane.showMessageDialog(frame, "Headings only support 25 ", "Maximum heading size", JOptionPane.ERROR_MESSAGE);
                 break;
 
             case "Duplicate":
@@ -601,7 +612,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                 } else if (offline) {
                     su = false;
                     JOptionPane.showMessageDialog(this, "You can not amend contracts offline. To save the contract " +
-                                                        "please use the [save] button.", "ERROR",
+                                    "please use the [save] button.", "ERROR",
                             JOptionPane.WARNING_MESSAGE);
                 } else {
                     message = sql.reuploadContract(fullContract);
@@ -626,10 +637,10 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                     su = false;
                     JOptionPane.showMessageDialog(frame, "First 5 digit of the contractID must be numeric");
                 } else if (offline) {
-                    if(offlineMode) {
+                    if (offlineMode) {
                         su = false;
                         JOptionPane.showMessageDialog(frame, "Saving offline is currently disabled");
-                    }else {
+                    } else {
                         edited = false;
                         su = false;
                         JFileChooser fd = new JFileChooser();
@@ -672,73 +683,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                 } else {
                     clear.doClick();
                     Log.logLine("Loading file");
-                    String[] data = fm.readFile(fd.getSelectedFile());
-                    fullContract.purge();
-                    String[] cDetails = data[0].split("~~");
-
-                    Contract c = new Contract();
-                    c.contractID = cDetails[0];
-                    c.contractDate = Convert.getIfDate(cDetails[1]);
-                    c.companyName = cDetails[2];
-                    c.address1 = cDetails[3];
-                    c.address2 = cDetails[4];
-                    c.address3 = cDetails[5];
-                    c.postcode = cDetails[6];
-                    c.deliveryMethod = cDetails[7];
-                    c.deliveryDate = Convert.getIfDate(cDetails[8]);
-                    c.quote = Convert.getBoolean(cDetails[9]);
-                    c.issued = Convert.getBoolean(cDetails[10]);
-                    c.engineer = cDetails[11];
-                    c.contractor = cDetails[12];
-                    fullContract.setDetails(c);
-
-                    String[] heading = data[1].split("~~");
-                    String[] headingLine = data[2].split("~~");
-                    String[] qProducts = data[3].split("~~");
-                    ArrayList<ContractHeading> contractHeading = new ArrayList<>(0);
-                    ArrayList<HeadingLine> contractHeadingLine = new ArrayList<>(0);
-                    ArrayList<Product> products = new ArrayList<>(0);
-                    ArrayList<Qproduct> qproducts = new ArrayList<>(0);
-
-
-                    for (String s : heading) {
-                        contractHeading.add(new ContractHeading((int) Convert.getIfNumeric(s.split("%50")[0]),
-                                s.split("%50")[1], s.split("%50")[2]));
-                    }
-                    Log.logLine("Heading Count: " + contractHeading.size());
-
-                    for (String s : headingLine) {
-                        Log.logLine(s.split("%50"));
-                        contractHeadingLine.add(new HeadingLine((int) Convert.getIfNumeric(s.split("%50")[0]),
-                                (int) Convert.getIfNumeric(s.split("%50")[1]), s.split("%50")[2], s.split("%50")[3],
-                                (int) Convert.getIfNumeric(s.split("%50")[4])));
-                    }
-                    Log.logLine("Heading Line Count: " + contractHeadingLine.size());
-
-
-                    for (HeadingLine head : contractHeadingLine) {
-                        for (Product prod : this.products) {
-                            if (head.productID.equalsIgnoreCase(prod.getProductID())) {
-                                products.add(prod);
-                            }
-                        }
-                    }
-
-                    for (String s : qProducts) {
-                        if (s.split("%50").length == 4) qproducts
-                                .add(new Qproduct((int) Convert.getIfNumeric(s.split("%50")[0]),
-                                        (int) Convert.getIfNumeric(s.split("%50")[1]),
-                                        Convert.getIfNumeric(s.split("%50")[2]), s.split("%50")[3]));
-                    }
-
-                    Log.logLine("Product Count: " + products.size());
-
-                    fullContract.contractHeadings = contractHeading;
-                    fullContract.contractHeadingLine = contractHeadingLine;
-                    fullContract.products = products;
-                    fullContract.qProducts = qproducts;
-
-                    setContractDetails(fullContract);
+                    loadContract(fd.getSelectedFile());
                 }
                 break;
 
@@ -776,6 +721,89 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         repaint();
     }
 
+    public void loadContract(File file) {
+        String[] data = fm.readFile(file);
+        fullContract.purge();
+        String[] cDetails = data[0].split("~~");
+
+        Contract c = new Contract();
+        if (cDetails.length >= 1)
+            c.contractID = cDetails[0];
+        if (cDetails.length >= 1)
+            c.contractDate = Convert.getIfDate(cDetails[1]);
+        if (cDetails.length >= 3)
+            c.companyName = cDetails[2];
+        if (cDetails.length >= 4)
+            c.address1 = cDetails[3];
+        if (cDetails.length >= 5)
+            c.address2 = cDetails[4];
+        if (cDetails.length >= 6)
+            c.address3 = cDetails[5];
+        if (cDetails.length >= 7)
+            c.postcode = cDetails[6];
+        if (cDetails.length >= 8)
+            c.deliveryMethod = cDetails[7];
+        if (cDetails.length >= 9)
+            c.deliveryDate = Convert.getIfDate(cDetails[8]);
+        if (cDetails.length >= 10)
+            c.quote = Convert.getBoolean(cDetails[9]);
+        if (cDetails.length >= 11)
+            c.issued = Convert.getBoolean(cDetails[10]);
+        if (cDetails.length >= 12)
+            c.engineer = cDetails[11];
+        if (cDetails.length >= 13)
+            c.contractor = cDetails[12];
+        fullContract.setDetails(c);
+
+        String[] heading = data[1].split("~~");
+        String[] headingLine = data[2].split("~~");
+        String[] qProducts = data[3].split("~~");
+        ArrayList<ContractHeading> contractHeading = new ArrayList<>(0);
+        ArrayList<HeadingLine> contractHeadingLine = new ArrayList<>(0);
+        ArrayList<Product> products = new ArrayList<>(0);
+        ArrayList<Qproduct> qproducts = new ArrayList<>(0);
+
+        for (String s : heading) {
+            if (s.split("%50").length == 3)
+                contractHeading.add(new ContractHeading((int) Convert.getIfNumeric(s.split("%50")[0]),
+                        s.split("%50")[1], s.split("%50")[2]));
+        }
+        Log.logLine("Heading Count: " + contractHeading.size());
+
+        for (String s : headingLine) {
+            if (s.split("%50").length == 5)
+                contractHeadingLine.add(new HeadingLine((int) Convert.getIfNumeric(s.split("%50")[0]),
+                        (int) Convert.getIfNumeric(s.split("%50")[1]), s.split("%50")[2], s.split("%50")[3],
+                        (int) Convert.getIfNumeric(s.split("%50")[4])));
+        }
+        Log.logLine("Heading Line Count: " + contractHeadingLine.size());
+
+
+        for (HeadingLine head : contractHeadingLine) {
+            for (Product prod : this.products) {
+                if (head.productID.equalsIgnoreCase(prod.getProductID())) {
+                    products.add(prod);
+                }
+            }
+        }
+
+        for (String s : qProducts) {
+            if (s.split("%50").length == 4) qproducts
+                    .add(new Qproduct((int) Convert.getIfNumeric(s.split("%50")[0]),
+                            (int) Convert.getIfNumeric(s.split("%50")[1]),
+                            Convert.getIfNumeric(s.split("%50")[2]), s.split("%50")[3]));
+        }
+
+        Log.logLine("Product Count: " + products.size());
+
+        fullContract.contractHeadings = contractHeading;
+        fullContract.contractHeadingLine = contractHeadingLine;
+        fullContract.products = products;
+        fullContract.qProducts = qproducts;
+
+        setContractDetails(fullContract);
+    }
+
     public void updateContract() {
         String[] ID;
         String[] desc;
@@ -805,7 +833,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
             ID = entry.getID();
             desc = entry.getDesc();
             quant = entry.getQuant();
-            for (int i = 0;i < entry.getSize();i++) {
+            for (int i = 0; i < entry.getSize(); i++) {
                 headingLineNumber = fullContract.addHeadingLine(headingNumber, ID[i], quant[i], desc[i]);
                 if (ID[i].equals("QP") || ID[i].equals("QL")) {
                     fullContract.addQProduct(headingLineNumber, entry.getQp(i), ID[i]);
@@ -837,10 +865,10 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
     public String[] sort(String[] arr) {
         int n = arr.length;
         // Build heap (rearrange array)
-        for (int i = n / 2 - 1;i >= 0;i--)
+        for (int i = n / 2 - 1; i >= 0; i--)
             heapify(arr, n, i);
         // One by one extract an element from heap
-        for (int i = n - 1;i > 0;i--) {
+        for (int i = n - 1; i > 0; i--) {
             // Move current root to end
             String temp = arr[0];
             arr[0] = arr[i];
@@ -881,7 +909,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
     public void keyPressed(KeyEvent e) {
         Log.logLine(e.getKeyCode());
         if (e.getKeyCode() == 9) {
-            for (int i = 0;i < idCont.getComponentCount();i++) {
+            for (int i = 0; i < idCont.getComponentCount(); i++) {
                 if (e.getSource().equals(idCont.getComponent(i))) {
                     edited = true;
                     String s = ((HintTextField) idCont.getComponent(i)).getText();
@@ -938,7 +966,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         }
     }
 
-    public boolean getEdited(){
+    public boolean getEdited() {
         return edited;
     }
 
