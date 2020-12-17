@@ -291,6 +291,7 @@ public class FileManager {
                 if(cat.equals(entry))
                     rValue.set(item.split("=")[1]);
             });
+            Log.logLine(entry + " = " + rValue.get());
             return rValue.get();
         }catch(Exception e){
             e.printStackTrace();

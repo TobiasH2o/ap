@@ -1,6 +1,5 @@
 package components;
 
-import com.mysql.cj.log.Log;
 
 import java.time.LocalDate;
 
@@ -21,8 +20,8 @@ public class Contract {
     public String contractor;
 
     public Contract(String contractID, LocalDate contractDate, String companyName, String address1, String address2,
-                    String address3, String postcode, String deliveryMethod, LocalDate deliveryDate, boolean quote,
-                    String engineer, Boolean issued, String contractor) {
+            String address3, String postcode, String deliveryMethod, LocalDate deliveryDate, boolean quote,
+            String engineer, Boolean issued, String contractor) {
         this.contractID = contractID;
         this.contractDate = contractDate;
         this.companyName = companyName;

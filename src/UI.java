@@ -44,20 +44,14 @@ public class UI extends JPanel implements ActionListener, WindowListener {
     private final SQLInterface sql = new SQLInterface();
     // Stores company logo
     private final BufferedImage logo;
-    private final PrinterJob job = PrinterJob.getPrinterJob();
     // used to find the SQL server
     private final PortSniffer ps = new PortSniffer();
     // Tables to store data from server
     // Stores printable version of logo
-    private final Printer printer;
-    private final JDialog makeIssued;
     private final String filePath;
     // Builds and views contracts, Must be handed Contract by parent
     private final ContractInterface ci;
-    private final JComboBox<? extends String> deliveryTypes = new JComboBox<>(
-            new String[]{"Carrier Standard", "Carrier next day pre 10AM", "Erector deliver and fix", "Lorry", "customer Collect"});
-    JDialog dateDialog = new JDialog();
-    DatePicker dp = new DatePicker();
+
     private FullContract fullContract = new FullContract();
     private String ip = "";
     private Contract[] contracts;
@@ -78,20 +72,6 @@ public class UI extends JPanel implements ActionListener, WindowListener {
     public UI(JFrame frame) {
 
         String myDocuments = null;
-        JButton confirmDate = new JButton("Confirm Delivery Info");
-        confirmDate.addActionListener(this);
-        confirmDate.setActionCommand("ConfirmIssue&Print");
-        dateDialog.setTitle("DELIVERY INFORMATION");
-        dateDialog.setSize(350, 250);
-        dateDialog.setLayout(new BorderLayout());
-        Container south = new Container();
-        south.setLayout(new BoxLayout(south, BoxLayout.X_AXIS));
-
-        dateDialog.add(dp, BorderLayout.CENTER);
-
-        south.add(deliveryTypes);
-        south.add(confirmDate);
-        dateDialog.add(south, BorderLayout.SOUTH);
 
         try {
             Process p = Runtime.getRuntime()
@@ -122,7 +102,6 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         fm = new FileManager(filePath);
 
         logo = fm.loadImage("/Images/Logo.png");
-        printer = new Printer(frame);
 
         if (!new File(filePath + "\\config.txt").exists()) {
             try {
@@ -178,7 +157,9 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         northBox.setLayout(new GridLayout(2, 3));
         northBox.add(submit);
         northBox.add(usernameBox);
+        usernameBox.setText("APENG");
         northBox.add(passwordBox);
+        passwordBox.setText("APENG");
         northBox.add(searchContract);
         northBox.add(makeContract);
         northBox.add(printInterface);
@@ -212,29 +193,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         buPanel.add(queryBox);
         buPanel.add(uploadDataButton);
 
-        makeIssued = new JDialog(frame);
-        makeIssued.setLayout(new GridBagLayout());
 
-        GridBagConstraints g = new GridBagConstraints();
-        JButton y = new JButton("Issue & print");
-        JButton n = new JButton("Just Print");
-        JLabel l = new JLabel("Print Options");
-        g.gridwidth = 2;
-        makeIssued.add(l, g);
-        g.gridwidth = 1;
-        g.gridy = 1;
-        makeIssued.add(y, g);
-        g.gridx = 1;
-        makeIssued.add(n, g);
-
-        makeIssued.setUndecorated(true);
-        makeIssued.setSize(200, 50);
-        makeIssued.setLocationRelativeTo(frame);
-
-        y.addActionListener(this);
-        n.addActionListener(this);
-        y.setActionCommand("print,issue");
-        n.setActionCommand("print,leave");
 
         repaint();
 
@@ -347,7 +306,8 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                 if (contracts != null && contracts.length > 0) {
                     SelectionList selecList = new SelectionList();
                     for (File contract : contracts)
-                        selecList.addItem(contract.getName());
+                        if(!contract.getName().equals("backupContract.cot"))
+                            selecList.addItem(contract.getName());
                     selecList.addOption("Upload");
                     selecList.addOption("Delete");
                     selecList.addOption("Ignore");
@@ -581,6 +541,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
 
             case "submit":
                 username = usernameBox.getText();
+                ci.setUsername(username);
                 password = passwordBox.getText();
                 SQLInterface.setDetails(ip, username, password);
                 //offline mode is the default
@@ -616,15 +577,10 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                         SQLInterface.PASSWORD = password;
                         SQLInterface.USERNAME = username;
                         Log.logLine("Logged IP " + ip);
-                        if (sql.contractManager() || test) {
                             serverFound = true;
                             submit.setText("Go Online");
                             submit.doClick();
                             ci.setOffline(false);
-                        } else {
-                            JOptionPane.showMessageDialog(null, "This account does not have permission to manage " +
-                                    "contracts");
-                        }
                     }
                 }
                 break;
@@ -667,52 +623,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                 submit.setText("Connect Server");
                 // Sets synced to the true
                 break;
-            case "ConfirmIssue&Print":
-                dateDialog.setVisible(false);
-                fullContract.details.contractDate = LocalDate.now();
-                fullContract.details.deliveryDate =
-                        LocalDate.parse(dp.getSelectedDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-                fullContract.details.deliveryMethod =
-                        Objects.requireNonNull(deliveryTypes.getSelectedItem()).toString();
-                fullContract.details.issued = true;
-                fullContract.details.contractor = username;
-                sql.setContractDate(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
-                        fullContract.details.contractID);
-                sql.setContractor(fullContract.details.contractID, username);
-                sql.issueContract(fullContract.details.contractID);
-                sql.setDeliveryDate(fullContract.details.deliveryDate, fullContract.details.contractID);
-                sql.setDeliveryMethod(fullContract.details.deliveryMethod, fullContract.details.contractID);
-                printer.setAllPrints(true);
-                printer.updateContract(fullContract);
-                printer.printContract(job);
-                break;
-            case "printDialog":
-                makeIssued.setVisible(true);
-                break;
-            case "print":
-                fullContract = ci.getContract();
-                makeIssued.setVisible(false);
-                if (event.split(",")[1].equalsIgnoreCase("issue")) {
-                    if (serverFound) {
-                        if (fullContract.details.issued) JOptionPane
-                                .showMessageDialog(this, "This contract has already been issued.", "DUPLICATE ISSUE",
-                                        JOptionPane.WARNING_MESSAGE);
-                        else if (fullContract.details.quote) JOptionPane
-                                .showMessageDialog(this, "Can not issue a quote.", "QUOTE ISSUE",
-                                        JOptionPane.WARNING_MESSAGE);
-                        else dateDialog.setVisible(true);
-                    } else JOptionPane.showMessageDialog(this, "You can not issue a Contract while offline.");
-                } else {
-                    printer.updateContract(fullContract);
-                    if (printer.gotContract()) {
-                        if (fullContract.details.issued)
-                            JOptionPane.showMessageDialog(this, "This Contract has been issued.");
 
-                        printer.setAllPrints(false);
-                        printer.printContract(job);
-                    } else JOptionPane.showMessageDialog(this, "Please load or make a Contract first.");
-                }
-                break;
             default:
                 Log.logLine("Unrecognised Command '" + event + "'");
 
@@ -776,8 +687,6 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         if (e.getSource().equals(ContractInterface.frame)) {
             Log.logLine("Loading built contract");
             ContractInterface.frame.setVisible(false);
-            if (ci.getEdited())
-                JOptionPane.showMessageDialog(this, "Remember to save your contract using the [Save] button.");
             fullContract = ci.getContract();
             fm.backupContract(fullContract);
             if (serverFound) syncWithServer();

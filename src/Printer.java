@@ -615,7 +615,7 @@ public class Printer implements Printable, ActionListener {
 
     }
 
-    public void prepEngies() {
+    public boolean prepEngies() {
         description = 1;
         title = "Engineer";
         sumTable = 3;
@@ -629,10 +629,10 @@ public class Printer implements Printable, ActionListener {
             else printDetails.addAll(Arrays.asList(section));
         }
         sumType = "MONEY";
-
+        return printDetails.size() != 0;
     }
 
-    public void prepBends() {
+    public boolean prepBends() {
         this.description = 1;
         title = "BENDS";
         printDetails.clear();
@@ -650,16 +650,18 @@ public class Printer implements Printable, ActionListener {
         printDetails = sumDupes(printDetails, new int[]{1}, new int[]{0, 2});
         sumTable = 2;
         sumName = "Make time";
+        return printDetails.size() != 0;
     }
 
-    public void prepStockItems() {
+    public boolean prepStockItems() {
         description = 1;
         title = "PURCHASE";
         printDetails.clear();
         printColumns = new String[]{"Quantity", "0.05", "Description", "0.2"};
         for (HeadingLine chl : fc.contractHeadingLine)
             for (Product pr : fc.products) {
-                if (pr.getProductType().equalsIgnoreCase("Brought Out and Stock") && chl.productID.equalsIgnoreCase(pr.getProductID())) {
+                if (pr.getProductType().equalsIgnoreCase("Brought Out and Stock") &&
+                    chl.productID.equalsIgnoreCase(pr.getProductID())) {
                     printDetails.add(new String[]{"" + chl.quantity, getDesc(pr, chl)});
                     break;
                 }
@@ -667,9 +669,10 @@ public class Printer implements Printable, ActionListener {
         sumTable = -1;
         printDetails = sort(1, printDetails);
         printDetails = sumDupes(printDetails, new int[]{1}, new int[]{0});
+        return printDetails.size() != 0;
     }
 
-    public void prepSkilled() {
+    public boolean prepSkilled() {
         description = 1;
         title = "SKILLED";
         printDetails.clear();
@@ -693,9 +696,10 @@ public class Printer implements Printable, ActionListener {
         sumTable = 2;
         printDetails = sort(1, printDetails);
         printDetails = sumDupes(printDetails, new int[]{1}, new int[]{0, 2});
+        return printDetails.size() != 0;
     }
 
-    public void prepPlasma() {
+    public boolean prepPlasma() {
         printDetails.clear();
         title = "PLASMA";
         description = 1;
@@ -710,9 +714,10 @@ public class Printer implements Printable, ActionListener {
         sumTable = -1;
         printDetails = sort(1, printDetails);
         printDetails = sumDupes(printDetails, new int[]{1}, new int[]{0});
+        return printDetails.size() != 0;
     }
 
-    public void prepPipes() {
+    public boolean prepPipes() {
         description = 1;
         printDetails.clear();
         title = "PIPES";
@@ -730,10 +735,10 @@ public class Printer implements Printable, ActionListener {
         sumTable = 2;
         printDetails = sort(1, printDetails);
         printDetails = sumDupes(printDetails, new int[]{1}, new int[]{0, 2});
-
+        return printDetails.size() != 0;
     }
 
-    public void prepLoading() {
+    public boolean prepLoading() {
         description = 1;
         printDetails.clear();
         title = "LOADING";
@@ -767,9 +772,10 @@ public class Printer implements Printable, ActionListener {
         sumTable = -1;
         printDetails = sort(1, printDetails);
         printDetails = sumDupes(printDetails, new int[]{1}, new int[]{0});
+        return printDetails.size() != 0;
     }
 
-    public void prepErector() {
+    public boolean prepErector() {
         description = 1;
         title = "ERECTOR";
         printDetails.clear();
@@ -781,6 +787,7 @@ public class Printer implements Printable, ActionListener {
             else Collections.addAll(printDetails, section);
         }
         sumTable = -1;
+        return printDetails.size() != 0;
     }
 
     public ArrayList<String[]> sumDupes(ArrayList<String[]> entry, int[] checks, int[] sums) {
@@ -875,76 +882,84 @@ public class Printer implements Printable, ActionListener {
                     erector.isSelected()) {
                     multiPrint = false;
                     if (engineersCopy.isSelected()) {
-                        prepEngies();
-                        if (!multiPrint) {
-                            if (job.printDialog()) {
-                                multiPrint = true;
-                                job.print();
-                            }
-                        } else job.print();
+                        if (prepEngies()) {
+                            if (!multiPrint) {
+                                if (job.printDialog()) {
+                                    multiPrint = true;
+                                    job.print();
+                                }
+                            } else job.print();
+                        } else JOptionPane.showMessageDialog(null, "Engineer print list is empty.");
                     }
                     if (bends.isSelected()) {
-                        prepBends();
-                        if (!multiPrint) {
-                            if (job.printDialog()) {
-                                multiPrint = true;
-                                job.print();
-                            }
-                        } else job.print();
+                        if (prepBends()) {
+                            if (!multiPrint) {
+                                if (job.printDialog()) {
+                                    multiPrint = true;
+                                    job.print();
+                                }
+                            } else job.print();
+                        } else JOptionPane.showMessageDialog(null, "Bends print list is empty.");
                     }
                     if (stockItems.isSelected()) {
-                        prepStockItems();
-                        if (!multiPrint) {
-                            if (job.printDialog()) {
-                                multiPrint = true;
-                                job.print();
-                            }
-                        } else job.print();
+                        if (prepStockItems()) {
+                            if (!multiPrint) {
+                                if (job.printDialog()) {
+                                    multiPrint = true;
+                                    job.print();
+                                }
+                            } else job.print();
+                        } else JOptionPane.showMessageDialog(null, "Stock print list is empty.");
                     }
                     if (skilled.isSelected()) {
-                        prepSkilled();
-                        if (!multiPrint) {
-                            if (job.printDialog()) {
-                                multiPrint = true;
-                                job.print();
-                            }
-                        } else job.print();
+                        if (prepSkilled()) {
+                            if (!multiPrint) {
+                                if (job.printDialog()) {
+                                    multiPrint = true;
+                                    job.print();
+                                }
+                            } else job.print();
+                        } else JOptionPane.showMessageDialog(null, "Skilled print list is empty.");
                     }
                     if (plasma.isSelected()) {
-                        prepPlasma();
-                        if (!multiPrint) {
-                            if (job.printDialog()) {
-                                multiPrint = true;
-                                job.print();
-                            }
-                        } else job.print();
+                        if (prepPlasma()) {
+                            if (!multiPrint) {
+                                if (job.printDialog()) {
+                                    multiPrint = true;
+                                    job.print();
+                                }
+                            } else job.print();
+                        } else JOptionPane.showMessageDialog(null, "Plasma print list is empty.");
                     }
                     if (pipes.isSelected()) {
-                        prepPipes();
-                        if (!multiPrint) {
-                            if (job.printDialog()) {
-                                multiPrint = true;
-                                job.print();
-                            }
-                        } else job.print();
+                        if (prepPipes()) {
+                            if (!multiPrint) {
+                                if (job.printDialog()) {
+                                    multiPrint = true;
+                                    job.print();
+                                }
+                            } else job.print();
+                        } else JOptionPane.showMessageDialog(null, "Pipes print list is empty.");
                     }
                     if (loading.isSelected()) {
-                        prepLoading();
-                        if (!multiPrint) {
-                            if (job.printDialog()) {
-                                multiPrint = true;
-                                job.print();
-                            }
-                        } else job.print();
+                        if (prepLoading()) {
+                            if (!multiPrint) {
+                                if (job.printDialog()) {
+                                    multiPrint = true;
+                                    job.print();
+                                }
+                            } else job.print();
+                        } else JOptionPane.showMessageDialog(null, "Loading print list is empty.");
                     }
                     if (erector.isSelected()) {
-                        prepErector();
-                        if (!multiPrint) {
-                            if (job.printDialog()) {
-                                multiPrint = true;
-                                job.print();
-                            }
-                        } else job.print();
+                        if (prepErector()) {
+                            if (!multiPrint) {
+                                if (job.printDialog()) {
+                                    multiPrint = true;
+                                    job.print();
+                                }
+                            } else job.print();
+                        } else JOptionPane.showMessageDialog(null, "Erector print list is empty.");
                     }
                 }
                 printTypes.setVisible(false);

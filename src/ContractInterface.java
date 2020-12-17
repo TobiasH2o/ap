@@ -2,11 +2,17 @@ import components.*;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.print.PrinterJob;
 import java.io.File;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Objects;
 
 
 public class ContractInterface extends JPanel implements ActionListener, KeyListener {
@@ -29,7 +35,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
     private final JButton nextHeading = new JButton("> > > >");
     private final JButton newEntry = new JButton("New Entry");
     private final JButton save = new JButton("Save");
-    private final JButton edit = new JButton("Amend");
+    private final JButton printButton = new JButton("Print");
     private final JButton clear = new JButton("Clear");
     private final HintTextField sectionHeading = new HintTextField("Section Heading", HintTextField.RIGHT_LEADING);
     private final ArrayList<Entry> entries = new ArrayList<>(0);
@@ -39,15 +45,22 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
     private final ArrayList<Double[]> costs = new ArrayList<>(0);
     private final FileManager fm;
     private final SQLInterface sql = new SQLInterface();
+    private final boolean offlineMode;
+    private final DatePicker dp = new DatePicker();
+    private final PrinterJob job = PrinterJob.getPrinterJob();
+    private final JComboBox<? extends String> deliveryTypes = new JComboBox<>(
+            new String[]{"Carrier Standard", "Carrier next day pre 10AM", "Erector deliver and fix", "Lorry", "customer Collect"});
+    private final JDialog makeIssued;
+    private final Printer printer;
+    JDialog dateDialog = new JDialog();
+    private String username = "VOID";
     private String engineerName = "OTHER";
     private Boolean offline = true;
     private boolean issued = false;
-    private boolean edited = false;
     private FullContract fullContract = new FullContract();
     private int heading = 0;
     private String[] productCode = new String[0];
     private final SuggestionField sf = new SuggestionField(productCode, frame);
-    private final boolean offlineMode;
     private Product[] products = new Product[0];// Contains all products available
 
     public ContractInterface(boolean offlineMode) {
@@ -55,6 +68,8 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         fm = new FileManager();
         this.offlineMode = offlineMode;
         entries.add(new Entry());
+
+        printer = new Printer(frame);
 
         contractNumber.setToolTipText("Contract number");
         companyName.setToolTipText("Company name");
@@ -126,10 +141,10 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         save.setAlignmentX(CENTER_ALIGNMENT);
         save.setFocusPainted(false);
 
-        edit.addActionListener(this);
-        edit.setActionCommand("Amend");
-        edit.setAlignmentX(CENTER_ALIGNMENT);
-        edit.setFocusPainted(false);
+        printButton.addActionListener(this);
+        printButton.setActionCommand("printDialog");
+        printButton.setAlignmentX(CENTER_ALIGNMENT);
+        printButton.setFocusPainted(false);
 
         clear.addActionListener(this);
         clear.setActionCommand("Clear");
@@ -172,13 +187,13 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         postcode.setMaximumSize(new Dimension(1000, 35));
         contractBox.setMaximumSize(new Dimension(1000, 35));
         save.setMaximumSize(new Dimension(1000, 35));
-        edit.setMaximumSize(new Dimension(1000, 35));
+        printButton.setMaximumSize(new Dimension(1000, 35));
         editSave.setMaximumSize(new Dimension(1000, 75));
         clear.setMaximumSize(new Dimension(1000, 35));
         load.setMaximumSize(new Dimension(1000, 35));
 
         editSave.add(save);
-        editSave.add(edit);
+        editSave.add(printButton);
         editSave.add(duplicate);
         editSave.add(clear);
 
@@ -211,10 +226,55 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         frame.setLocationRelativeTo(getParent());
         frame.add(this);
 
+        makeIssued = new JDialog(frame);
+        makeIssued.setLayout(new GridBagLayout());
+
+        GridBagConstraints g = new GridBagConstraints();
+        JButton y = new JButton("Issue & print");
+        JButton n = new JButton("Just Print");
+        JLabel l = new JLabel("Print Options");
+        g.gridwidth = 2;
+        makeIssued.add(l, g);
+        g.gridwidth = 1;
+        g.gridy = 1;
+        makeIssued.add(y, g);
+        g.gridx = 1;
+        makeIssued.add(n, g);
+
+        makeIssued.setUndecorated(true);
+        makeIssued.setSize(200, 50);
+        makeIssued.setLocationRelativeTo(frame);
+
+        dateDialog.setTitle("DELIVERY INFORMATION");
+        dateDialog.setSize(350, 250);
+        dateDialog.setLayout(new BorderLayout());
+        Container south = new Container();
+        south.setLayout(new BoxLayout(south, BoxLayout.X_AXIS));
+
+        JButton confirmDate = new JButton("Confirm Delivery Info");
+        confirmDate.addActionListener(this);
+        confirmDate.setActionCommand("ConfirmIssue&Print");
+
+        dateDialog.add(dp, BorderLayout.CENTER);
+
+        south.add(deliveryTypes);
+        south.add(confirmDate);
+        dateDialog.add(south, BorderLayout.SOUTH);
+
+
+        y.addActionListener(this);
+        n.addActionListener(this);
+        y.setActionCommand("print,issue");
+        n.setActionCommand("print,leave");
+
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public void checkBoxes() {
-        for (int i = 0; i < idCont.getComponentCount(); i++) {
+        for (int i = 0;i < idCont.getComponentCount();i++) {
             checkBox(i);
         }
     }
@@ -228,8 +288,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
 
     public boolean isValidCode(String code) {
         for (String s : productCode)
-            if (s.equals(code))
-                return true;
+            if (s.equals(code)) return true;
         return false;
     }
 
@@ -258,7 +317,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         quantCont.removeAll();
         descCont.removeAll();
         sf.purge();
-        for (int i = 0; i < ID.size(); i++) {
+        for (int i = 0;i < ID.size();i++) {
             idCont.add(ID.get(i));
             quantCont.add(quant.get(i));
             descCont.add(desc.get(i));
@@ -288,7 +347,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         ID.clear();
         desc.clear();
         quant.clear();
-        for (int i = 0; i < idata.length; i++) {// Storing locally reduces load times ~50x
+        for (int i = 0;i < idata.length;i++) {// Storing locally reduces load times ~50x
             addField(idata[i], ddata[i], "" + qdata[i]);
         }
         sectionHeading.setText(entries.get(heading).getTitle());
@@ -302,7 +361,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         String[] rDesc = new String[ID.size()];
         int[] rQuant = new int[ID.size()];
         int skips = 0;
-        for (int i = 0; i < ID.size(); i++) {
+        for (int i = 0;i < ID.size();i++) {
             if (Convert.isNumeric(quant.get(i).getText())) {
                 if (Convert.getIfNumeric(quant.get(i).getText()) > 0 && (!ID.get(i).getText().isEmpty())) {
                     rID[i - skips] = ID.get(i).getText();
@@ -324,7 +383,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         String[] tmpID = new String[rID.length - skips];
         String[] tmpDesc = new String[rID.length - skips];
         int[] tmpQuant = new int[rID.length - skips];
-        for (int i = 0; i < tmpID.length; i++) {
+        for (int i = 0;i < tmpID.length;i++) {
             tmpID[i] = rID[i];
             tmpDesc[i] = rDesc[i];
             tmpQuant[i] = rQuant[i];
@@ -352,7 +411,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
     public void addCost(int pos, double cost) {
         Double[] toAdd = new Double[]{(double) pos, cost};
         boolean added = false;
-        for (int i = 0; i < costs.size(); i++) {
+        for (int i = 0;i < costs.size();i++) {
             if (costs.get(i)[0].equals(toAdd[0])) {
                 costs.set(i, toAdd);
                 added = true;
@@ -365,10 +424,10 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
     }
 
     public ArrayList<Double[]> cleanCosts(ArrayList<Double[]> c, String[] t) {
-        for (int i = 0; i < c.size(); i++) {
+        for (int i = 0;i < c.size();i++) {
             if (c.get(i)[0] < t.length) {
                 if (!(t[c.get(i)[0].intValue()].equalsIgnoreCase("QL") ||
-                        t[c.get(i)[0].intValue()].equalsIgnoreCase("QP"))) {
+                      t[c.get(i)[0].intValue()].equalsIgnoreCase("QP"))) {
                     c.remove(i);
                     i--;
                 }
@@ -411,7 +470,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         setEngi(fc.details.engineer);
         String description;
         Log.logLine("================================Started searching for Contract " +
-                "details================================");
+                    "details================================");
         for (ContractHeading contractHeading : fc.contractHeadings) {
             sectionHeading.setText(contractHeading.headingTitle);
             for (HeadingLine contractHeadingLine : fc.contractHeadingLine) {
@@ -449,7 +508,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
 
     private void setEngi(String engy) {
         boolean add = true;
-        for (int i = 0; i < engineer.getItemCount(); i++) {
+        for (int i = 0;i < engineer.getItemCount();i++) {
             if (engineer.getItemAt(i).equals(engy)) {
                 add = false;
                 break;
@@ -500,7 +559,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         address2.setEditable(true);
         address3.setEditable(true);
         companyName.setEditable(true);
-        edit.setEnabled(true);
+        printButton.setEnabled(true);
         quote.setEnabled(true);
         if (!sectionHeading.getText().isEmpty()) saveToEntries(false);
         loadFromEntries();
@@ -518,7 +577,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         address2.setEditable(false);
         address3.setEditable(false);
         companyName.setEditable(false);
-        edit.setEnabled(false);
+        printButton.setEnabled(false);
         quote.setEnabled(false);
         if (!sectionHeading.getText().isEmpty()) saveToEntries(false);
         loadFromEntries();
@@ -533,7 +592,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        String command = e.getActionCommand();
+        String command = e.getActionCommand().split(",")[0];
 
         switch (command) {
 
@@ -548,8 +607,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                         heading++;
                         if (heading >= entries.size()) entries.add(new Entry());
                         loadFromEntries();
-                        if (sectionHeading.getText().isEmpty())
-                            sectionHeading.setText("HEADING " + heading);
+                        if (sectionHeading.getText().isEmpty()) sectionHeading.setText("HEADING " + heading);
                     }
                 } else {
                     if (heading <= entries.size() - 1) {
@@ -575,8 +633,8 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
 
             case "newItem":
                 if (ID.size() < 20) addField("", "", "");
-                else
-                    JOptionPane.showMessageDialog(frame, "Headings only support 25 ", "Maximum heading size", JOptionPane.ERROR_MESSAGE);
+                else JOptionPane.showMessageDialog(frame, "Headings only support 25 ", "Maximum heading size",
+                        JOptionPane.ERROR_MESSAGE);
                 break;
 
             case "Duplicate":
@@ -594,34 +652,6 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                 updateContract();
                 break;
 
-            case "Amend": {
-                edited = false;
-                boolean su = true;
-                updateContract();
-                String message = "";
-                String cn = fullContract.details.contractID;
-                if (cn.isEmpty()) {
-                    su = false;
-                    JOptionPane.showMessageDialog(frame, "No contractID provided");
-                } else if (cn.length() < 5) {
-                    su = false;
-                    JOptionPane.showMessageDialog(frame, "ContractID must be 5 numeric digits");
-                } else if (!Convert.isNumeric(cn.substring(0, 5))) {
-                    su = false;
-                    JOptionPane.showMessageDialog(frame, "ContractID must be numeric");
-                } else if (offline) {
-                    su = false;
-                    JOptionPane.showMessageDialog(this, "You can not amend contracts offline. To save the contract " +
-                                    "please use the [save] button.", "ERROR",
-                            JOptionPane.WARNING_MESSAGE);
-                } else {
-                    message = sql.reuploadContract(fullContract);
-                }
-                if (su) JOptionPane
-                        .showMessageDialog(this, message, "Contract amend response", JOptionPane.INFORMATION_MESSAGE);
-                break;
-            }
-
             case "Save": {
                 boolean su = true;
                 String message = "";
@@ -630,19 +660,22 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                 if (cn.isEmpty()) {
                     su = false;
                     JOptionPane.showMessageDialog(frame, "No contractID provided");
+                } else if (quote.isSelected()) {
+                    if (cn.startsWith("Q") || cn.startsWith("q")) {
+                        cn = cn.substring(1);
+                        fullContract.details.contractID = cn;
+                    }
                 } else if (cn.length() < 5) {
                     su = false;
                     JOptionPane.showMessageDialog(frame, "ContractID must be 5 numeric digits");
                 } else if (!Convert.isNumeric(cn.substring(0, 5))) {
                     su = false;
-                    JOptionPane.showMessageDialog(frame, "First 5 digit of the contractID must be numeric");
-                } else if (offline) {
+                    JOptionPane.showMessageDialog(frame, "ContractID must be numeric");
+                }
+                if (offline) {
                     if (offlineMode) {
-                        su = false;
                         JOptionPane.showMessageDialog(frame, "Saving offline is currently disabled");
                     } else {
-                        edited = false;
-                        su = false;
                         JFileChooser fd = new JFileChooser();
                         fd.setDialogTitle("Save Contract");
                         fd.setCurrentDirectory(new File(FileManager.filePath + "\\Data\\Contracts"));
@@ -655,16 +688,19 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                         }
                         JOptionPane.showMessageDialog(frame, "Saved contract.");
                     }
-                } else {
-                    edited = false;
-                    message = sql.pushContract(fullContract);
+                } else if (sql.contractExists(cn) && su) {
+                    if (JOptionPane.showConfirmDialog(null,
+                            "You are about to update contract " + cn + " as it " + "already " +
+                            "exists.\nDo you wish to continue to overwrite " + cn + "?") != 0) JOptionPane
+                            .showMessageDialog(this, sql.reuploadContract(fullContract), "Contract amend response",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                } else if (su) {
+                    JOptionPane.showMessageDialog(this, sql.pushContract(fullContract), "Contract upload response",
+                            JOptionPane.INFORMATION_MESSAGE);
                 }
-                if (su) JOptionPane
-                        .showMessageDialog(this, message, "Contract upload response", JOptionPane.INFORMATION_MESSAGE);
                 break;
             }
             case "Load":
-                edited = false;
                 int cont;
                 updateContract();
                 JFileChooser fd = new JFileChooser();
@@ -713,6 +749,54 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                 repaint();
                 break;
 
+            case "printDialog":
+                makeIssued.setVisible(true);
+                break;
+            case "print":
+                fullContract = getContract();
+                makeIssued.setVisible(false);
+                if (e.getActionCommand().split(",")[1].equalsIgnoreCase("issue")) {
+                    if (!offline) {
+                        if (fullContract.details.issued) JOptionPane
+                                .showMessageDialog(this, "This contract has already been issued.", "DUPLICATE ISSUE",
+                                        JOptionPane.WARNING_MESSAGE);
+                        else if (fullContract.details.quote) JOptionPane
+                                .showMessageDialog(this, "Can not issue a quote.", "QUOTE ISSUE",
+                                        JOptionPane.WARNING_MESSAGE);
+                        else dateDialog.setVisible(true);
+                    } else JOptionPane.showMessageDialog(this, "You can not issue a Contract while offline.");
+                } else {
+                    printer.updateContract(fullContract);
+                    if (printer.gotContract()) {
+                        if (fullContract.details.issued)
+                            JOptionPane.showMessageDialog(this, "This Contract has been issued.");
+
+                        printer.setAllPrints(false);
+                        printer.printContract(job);
+                    } else JOptionPane.showMessageDialog(this, "Please load or make a Contract first.");
+                }
+                break;
+            case "ConfirmIssue&Print":
+                dateDialog.setVisible(false);
+                fullContract.details.contractDate = LocalDate.now();
+                fullContract.details.deliveryDate =
+                        LocalDate.parse(dp.getSelectedDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                fullContract.details.deliveryMethod =
+                        Objects.requireNonNull(deliveryTypes.getSelectedItem()).toString();
+                fullContract.details.issued = true;
+                fullContract.details.contractor = username;
+                sql.setContractDate(LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")),
+                        fullContract.details.contractID);
+                sql.setContractor(fullContract.details.contractID, username);
+                sql.issueContract(fullContract.details.contractID);
+                sql.setDeliveryDate(fullContract.details.deliveryDate, fullContract.details.contractID);
+                sql.setDeliveryMethod(fullContract.details.deliveryMethod, fullContract.details.contractID);
+                printer.setAllPrints(true);
+                printer.updateContract(fullContract);
+                printer.printContract(job);
+                break;
+
+
             default:
                 Log.logLine("Unknown command " + command);
                 break;
@@ -727,32 +811,19 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         String[] cDetails = data[0].split("~~");
 
         Contract c = new Contract();
-        if (cDetails.length >= 1)
-            c.contractID = cDetails[0];
-        if (cDetails.length >= 1)
-            c.contractDate = Convert.getIfDate(cDetails[1]);
-        if (cDetails.length >= 3)
-            c.companyName = cDetails[2];
-        if (cDetails.length >= 4)
-            c.address1 = cDetails[3];
-        if (cDetails.length >= 5)
-            c.address2 = cDetails[4];
-        if (cDetails.length >= 6)
-            c.address3 = cDetails[5];
-        if (cDetails.length >= 7)
-            c.postcode = cDetails[6];
-        if (cDetails.length >= 8)
-            c.deliveryMethod = cDetails[7];
-        if (cDetails.length >= 9)
-            c.deliveryDate = Convert.getIfDate(cDetails[8]);
-        if (cDetails.length >= 10)
-            c.quote = Convert.getBoolean(cDetails[9]);
-        if (cDetails.length >= 11)
-            c.issued = Convert.getBoolean(cDetails[10]);
-        if (cDetails.length >= 12)
-            c.engineer = cDetails[11];
-        if (cDetails.length >= 13)
-            c.contractor = cDetails[12];
+        if (cDetails.length >= 1) c.contractID = cDetails[0];
+        if (cDetails.length >= 1) c.contractDate = Convert.getIfDate(cDetails[1]);
+        if (cDetails.length >= 3) c.companyName = cDetails[2];
+        if (cDetails.length >= 4) c.address1 = cDetails[3];
+        if (cDetails.length >= 5) c.address2 = cDetails[4];
+        if (cDetails.length >= 6) c.address3 = cDetails[5];
+        if (cDetails.length >= 7) c.postcode = cDetails[6];
+        if (cDetails.length >= 8) c.deliveryMethod = cDetails[7];
+        if (cDetails.length >= 9) c.deliveryDate = Convert.getIfDate(cDetails[8]);
+        if (cDetails.length >= 10) c.quote = Convert.getBoolean(cDetails[9]);
+        if (cDetails.length >= 11) c.issued = Convert.getBoolean(cDetails[10]);
+        if (cDetails.length >= 12) c.engineer = cDetails[11];
+        if (cDetails.length >= 13) c.contractor = cDetails[12];
         fullContract.setDetails(c);
 
         String[] heading = data[1].split("~~");
@@ -764,17 +835,17 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         ArrayList<Qproduct> qproducts = new ArrayList<>(0);
 
         for (String s : heading) {
-            if (s.split("%50").length == 3)
-                contractHeading.add(new ContractHeading((int) Convert.getIfNumeric(s.split("%50")[0]),
-                        s.split("%50")[1], s.split("%50")[2]));
+            if (s.split("%50").length == 3) contractHeading
+                    .add(new ContractHeading((int) Convert.getIfNumeric(s.split("%50")[0]), s.split("%50")[1],
+                            s.split("%50")[2]));
         }
         Log.logLine("Heading Count: " + contractHeading.size());
 
         for (String s : headingLine) {
-            if (s.split("%50").length == 5)
-                contractHeadingLine.add(new HeadingLine((int) Convert.getIfNumeric(s.split("%50")[0]),
-                        (int) Convert.getIfNumeric(s.split("%50")[1]), s.split("%50")[2], s.split("%50")[3],
-                        (int) Convert.getIfNumeric(s.split("%50")[4])));
+            if (s.split("%50").length == 5) contractHeadingLine
+                    .add(new HeadingLine((int) Convert.getIfNumeric(s.split("%50")[0]),
+                            (int) Convert.getIfNumeric(s.split("%50")[1]), s.split("%50")[2], s.split("%50")[3],
+                            (int) Convert.getIfNumeric(s.split("%50")[4])));
         }
         Log.logLine("Heading Line Count: " + contractHeadingLine.size());
 
@@ -788,10 +859,9 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         }
 
         for (String s : qProducts) {
-            if (s.split("%50").length == 4) qproducts
-                    .add(new Qproduct((int) Convert.getIfNumeric(s.split("%50")[0]),
-                            (int) Convert.getIfNumeric(s.split("%50")[1]),
-                            Convert.getIfNumeric(s.split("%50")[2]), s.split("%50")[3]));
+            if (s.split("%50").length == 4) qproducts.add(new Qproduct((int) Convert.getIfNumeric(s.split("%50")[0]),
+                    (int) Convert.getIfNumeric(s.split("%50")[1]), Convert.getIfNumeric(s.split("%50")[2]),
+                    s.split("%50")[3]));
         }
 
         Log.logLine("Product Count: " + products.size());
@@ -833,7 +903,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
             ID = entry.getID();
             desc = entry.getDesc();
             quant = entry.getQuant();
-            for (int i = 0; i < entry.getSize(); i++) {
+            for (int i = 0;i < entry.getSize();i++) {
                 headingLineNumber = fullContract.addHeadingLine(headingNumber, ID[i], quant[i], desc[i]);
                 if (ID[i].equals("QP") || ID[i].equals("QL")) {
                     fullContract.addQProduct(headingLineNumber, entry.getQp(i), ID[i]);
@@ -865,10 +935,10 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
     public String[] sort(String[] arr) {
         int n = arr.length;
         // Build heap (rearrange array)
-        for (int i = n / 2 - 1; i >= 0; i--)
+        for (int i = n / 2 - 1;i >= 0;i--)
             heapify(arr, n, i);
         // One by one extract an element from heap
-        for (int i = n - 1; i > 0; i--) {
+        for (int i = n - 1;i > 0;i--) {
             // Move current root to end
             String temp = arr[0];
             arr[0] = arr[i];
@@ -909,9 +979,8 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
     public void keyPressed(KeyEvent e) {
         Log.logLine(e.getKeyCode());
         if (e.getKeyCode() == 9) {
-            for (int i = 0; i < idCont.getComponentCount(); i++) {
+            for (int i = 0;i < idCont.getComponentCount();i++) {
                 if (e.getSource().equals(idCont.getComponent(i))) {
-                    edited = true;
                     String s = ((HintTextField) idCont.getComponent(i)).getText();
                     if (s.equalsIgnoreCase("QP") || s.equalsIgnoreCase("QL")) {
                         double cost = Convert.getIfNumeric(JOptionPane.showInputDialog("Product Price"));
@@ -950,24 +1019,18 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                     break;
                 }
                 if (e.getSource().equals(quantCont.getComponent(i))) {
-                    edited = true;
                     if (((HintTextField) quantCont.getComponent(i)).getText().isBlank())
                         ((HintTextField) quantCont.getComponent(i)).setText("1");
                     ((HintTextField) descCont.getComponent(i)).grabFocus();
                     break;
                 }
                 if (e.getSource().equals(descCont.getComponent(i))) {
-                    edited = true;
                     if (i + 1 == idCont.getComponentCount()) newEntry.doClick();
                     ((HintTextField) idCont.getComponent(i + 1)).grabFocus();
                     break;
                 }
             }
         }
-    }
-
-    public boolean getEdited() {
-        return edited;
     }
 
     @Override
