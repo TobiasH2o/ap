@@ -644,6 +644,8 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                 issued = false;
                 enableEdits();
                 updateContract();
+                nextHeading.doClick();
+                prevHeading.doClick();
                 break;
 
             case "Save": {
