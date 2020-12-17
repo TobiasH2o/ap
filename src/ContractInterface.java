@@ -54,7 +54,6 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
     private final Printer printer;
     JDialog dateDialog = new JDialog();
     private String username = "VOID";
-    private String engineerName = "OTHER";
     private Boolean offline = true;
     private boolean issued = false;
     private FullContract fullContract = new FullContract();
@@ -640,11 +639,6 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
             case "Duplicate":
                 contractNumber.setText("");
                 engineer.setSelectedItem("OTHER");
-                companyName.setText("");
-                address1.setText("");
-                address2.setText("");
-                address3.setText("");
-                postcode.setText("");
                 quote.setSelected(false);
                 fullContract.details.clear();
                 issued = false;
@@ -654,7 +648,6 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
 
             case "Save": {
                 boolean su = true;
-                String message = "";
                 updateContract();
                 String cn = fullContract.details.contractID;
                 if (cn.isEmpty()) {
@@ -691,7 +684,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                 } else if (sql.contractExists(cn) && su) {
                     if (JOptionPane.showConfirmDialog(null,
                             "You are about to update contract " + cn + " as it " + "already " +
-                            "exists.\nDo you wish to continue to overwrite " + cn + "?") != 0) JOptionPane
+                            "exists.\nDo you wish to continue to overwrite " + cn + "?") == 0) JOptionPane
                             .showMessageDialog(this, sql.reuploadContract(fullContract), "Contract amend response",
                                     JOptionPane.INFORMATION_MESSAGE);
                 } else if (su) {

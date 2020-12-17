@@ -115,13 +115,6 @@ public class SQLInterface {
         sendQuery("UPDATE `contract` SET `issued` = 1 WHERE `contractID` = '" + contractID + "'");
     }
 
-    public boolean contractManager() {
-        String[][] s = sendQuery("SHOW GRANTS");
-        for (String[] k : s)
-            if (k[0].contains("contractManager")) return true;
-        return false;
-    }
-
     public void setContractor(String contractID, String contractor) {
         sendQuery("UPDATE `contract` SET `issuer` = '" + contractor + "' WHERE `contractID` = '" + contractID + "'");
     }
