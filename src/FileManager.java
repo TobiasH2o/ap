@@ -25,7 +25,7 @@ public class FileManager {
     public FileManager() {}
 
     public void backupContract(FullContract fc){
-        saveContract(fc, new File(filePath + "\\Data\\Contracts\\backupContract.cot"));
+        saveContract(fc, new File(filePath + "\\Data\\Backup\\backupContract.cot"));
     }
 
     public void buildDirectory(String filePath){
@@ -35,27 +35,14 @@ public class FileManager {
             if (f.mkdirs()) hideFile(f);
             else Log.logLine("Failed Directory " + f.getName());
         }
-        File f1 = new File(filePath + "\\Data\\");
-        File f2 = new File(filePath + "\\Tables\\");
-        File f3 = new File(filePath + "\\Data\\Contracts\\");
-        File f4 = new File(filePath + "\\errorLogs\\");
-        if (!f1.exists() || !f1.isDirectory()) {
-            Log.logLine("Making Directory " + f1.getName());
-            if (!f1.mkdirs()) JOptionPane.showMessageDialog(null, "Failed to create required directory \\Data\\");
-        }
-        if (!f2.exists() || !f2.isDirectory()) {
-            Log.logLine("Making Directory " + f2.getName());
-            if (!f2.mkdirs()) JOptionPane.showMessageDialog(null, "Failed to create required directory \\Tables\\");
-        }
-        if (!f3.exists() || !f3.isDirectory()) {
-            Log.logLine("Making Directory " + f3.getName());
-            if (!f3.mkdirs())
-                JOptionPane.showMessageDialog(null, "Failed to create required directory " + "\\Data\\Contracts\\");
-        }
-        if (!f4.exists() || !f4.isDirectory()) {
-            Log.logLine("Making Directory " + f4.getName());
-            if (!f4.mkdirs())
-                JOptionPane.showMessageDialog(null, "Failed to create required directory " + "\\Data\\errorLogs\\");
+        File[] files = new File[]{new File(filePath + "\\Data\\"), new File(filePath + "\\Tables\\"),
+                new File(filePath + "\\Data\\Contracts\\"), new File(filePath + "\\errorLogs\\"),
+                new File(filePath + "\\Data\\Backup\\")};
+        for(File f1 : files){
+            if (!f1.exists() || !f1.isDirectory()) {
+                Log.logLine("Making Directory " + f1.getName());
+                if (!f1.mkdirs()) JOptionPane.showMessageDialog(null, "Failed to create required directory\n" + f.getAbsolutePath());
+            }
         }
     }
 

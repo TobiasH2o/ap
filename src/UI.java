@@ -33,9 +33,8 @@ public class UI extends JPanel implements ActionListener, WindowListener {
     private final HintTextField usernameBox = new HintTextField("Username", HintTextField.CENTER_HIDDEN);
     private final HintTextField passwordBox = new HintTextField("Password", HintTextField.CENTER_HIDDEN);
     private final JButton submit = new JButton("Load local data");
-    private final JButton makeContract = new JButton("Make/Edit Contract");
+    private final JButton makeContract = new JButton("Contract Interface");
     private final JButton searchContract = new JButton("Search Orders");
-    private final JButton printInterface = new JButton("Print Contract");
     // sp allows user to search any loaded contracts
     private final SearchPanel sp = new SearchPanel();
     // Used to load and save files
@@ -135,10 +134,6 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         searchContract.setActionCommand("sc");
         searchContract.setFocusPainted(false);
 
-        printInterface.addActionListener(this);
-        printInterface.setActionCommand("printDialog");
-        printInterface.setFocusPainted(false);
-
         makeContract.addActionListener(this);
         makeContract.setActionCommand("makeContract");
         makeContract.setFocusPainted(false);
@@ -162,14 +157,12 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         passwordBox.setText("APENG");
         northBox.add(searchContract);
         northBox.add(makeContract);
-        northBox.add(printInterface);
 
         // Disables program functionality until it has loaded local data sources
         usernameBox.setEnabled(false);
         passwordBox.setEnabled(false);
         searchContract.setEnabled(false);
         makeContract.setEnabled(false);
-        printInterface.setEnabled(false);
 
         southBox.setLayout(new GridLayout(1, 1));
         southBox.add(syncWithServer);
@@ -306,8 +299,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                 if (contracts != null && contracts.length > 0) {
                     SelectionList selecList = new SelectionList();
                     for (File contract : contracts)
-                        if(!contract.getName().equals("backupContract.cot"))
-                            selecList.addItem(contract.getName());
+                        selecList.addItem(contract.getName());
                     selecList.addOption("Upload");
                     selecList.addOption("Delete");
                     selecList.addOption("Ignore");
@@ -609,13 +601,12 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                 passwordBox.setEnabled(true);
                 searchContract.setEnabled(true);
                 makeContract.setEnabled(true);
-                printInterface.setEnabled(true);
 
                 // Loads data stored locally
                 loadData();
 
-                if (new File(filePath + "\\Data\\Contracts\\backupContract.cot").exists()) {
-                    ci.loadContract(new File(filePath + "\\Data\\Contracts\\backupContract.cot"));
+                if (new File(filePath + "\\Data\\Backup\\backupContract.cot").exists()) {
+                    ci.loadContract(new File(filePath + "\\Data\\Backup\\backupContract.cot"));
                     fullContract = ci.getContract();
                 }
 
