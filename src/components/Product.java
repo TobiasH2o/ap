@@ -38,13 +38,12 @@ public class Product {
     private Boolean silo;
 
 
-    public Product(String productID, String description, double makeTime, double plasmaTime, double paintTime, double balanceTime,
-            double testTime, double salesCost, String productType, Boolean skilled, Boolean stock,
-                   Boolean discontinued, Boolean fan, Boolean impellor, Boolean cyclone, Boolean broughtOut,
-                   Boolean broughtOutPaB, Boolean controlBox, Boolean filter, Boolean sprayBooth, Boolean pipeOrBend,
-                   Boolean soundEnclosure, Boolean valve, Boolean dustUnit, Boolean hood, Boolean beltGuard,
-                   Boolean bin, Boolean cefFilter, Boolean erectionAndTransport, Boolean oAndS,
-                   Boolean pulleyBlastGates, Boolean silo) {
+    public Product(String productID, String description, double salesCost, double makeTime, double plasmaTime,
+            double paintTime, double balanceTime, double testTime, String productType, Boolean skilled, Boolean stock,
+            Boolean discontinued, Boolean fan, Boolean impellor, Boolean cyclone, Boolean broughtOut,
+            Boolean broughtOutPaB, Boolean controlBox, Boolean filter, Boolean sprayBooth, Boolean pipeOrBend,
+            Boolean soundEnclosure, Boolean valve, Boolean dustUnit, Boolean hood, Boolean beltGuard, Boolean bin,
+            Boolean cefFilter, Boolean erectionAndTransport, Boolean oAndS, Boolean pulleyBlastGates, Boolean silo) {
         this.productID = productID;
         this.description = description;
         this.makeTime = makeTime;

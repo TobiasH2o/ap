@@ -14,7 +14,12 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.stream.Stream;
+
+import javax.mail.*;
+import javax.mail.internet.*;
+import javax.activation.*;
 
 import static javax.swing.BoxLayout.Y_AXIS;
 
@@ -182,8 +187,6 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         buPanel.add(queryBox);
         buPanel.add(uploadDataButton);
 
-
-
         repaint();
 
         checkDates();
@@ -192,6 +195,38 @@ public class UI extends JPanel implements ActionListener, WindowListener {
 
         submit.doClick();
 
+    }
+
+    public void sendErrorLog(){
+        String to = "tobias.heatlie@gmail.com";
+
+        // Sender's email ID needs to be mentioned
+        String from = "AirPlantsDebug@gmail.com";
+
+        // Assuming you are sending email from localhost
+        String host = "localhost";
+
+        // Get system properties
+        Properties properties = System.getProperties();
+
+        // Setup mail server
+        properties.setProperty("mail.smtp.host", host);
+
+        Session session = Session.getDefaultInstance(properties);
+
+        try{
+            MimeMessage message = new MimeMessage(session);
+            message.setRecipients(Message.RecipientType.TO, to);
+            message.setFrom(new InternetAddress(from));
+
+            message.setSubject("Error reported on version " + version);
+
+            message.setText("Report:");
+
+            Transport.send(message);
+        }catch(MessagingException mex){
+            mex.printStackTrace();
+        }
     }
 
     protected void paintComponent(Graphics g) {

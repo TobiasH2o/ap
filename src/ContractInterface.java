@@ -773,6 +773,8 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                 break;
             case "ConfirmIssue&Print":
                 dateDialog.setVisible(false);
+                if(!sql.contractExists(fullContract.details.contractID))
+                    sql.pushContract(fullContract);
                 fullContract.details.contractDate = LocalDate.now();
                 fullContract.details.deliveryDate =
                         LocalDate.parse(dp.getSelectedDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd"));
