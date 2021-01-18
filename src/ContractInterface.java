@@ -558,7 +558,6 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         address2.setEditable(true);
         address3.setEditable(true);
         companyName.setEditable(true);
-        printButton.setEnabled(true);
         quote.setEnabled(true);
         if (!sectionHeading.getText().isEmpty()) saveToEntries(false);
         loadFromEntries();
@@ -576,7 +575,6 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         address2.setEditable(false);
         address3.setEditable(false);
         companyName.setEditable(false);
-        printButton.setEnabled(false);
         quote.setEnabled(false);
         if (!sectionHeading.getText().isEmpty()) saveToEntries(false);
         loadFromEntries();
