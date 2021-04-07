@@ -685,7 +685,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                     if (JOptionPane.showConfirmDialog(null,
                             "You are about to update contract " + cn + " as it " + "already " +
                             "exists.\nDo you wish to continue to overwrite " + cn + "?") == 0) JOptionPane
-                            .showMessageDialog(this, sql.reuploadContract(fullContract), "Contract amend response",
+                            .showMessageDialog(this, sql.amendContract(fullContract), "Contract amend response",
                                     JOptionPane.INFORMATION_MESSAGE);
                 } else if (su) {
                     JOptionPane.showMessageDialog(this, sql.pushContract(fullContract), "Contract upload response",

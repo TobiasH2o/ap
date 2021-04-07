@@ -97,6 +97,8 @@ public class UI extends JPanel implements ActionListener, WindowListener {
 
         logo = fm.loadImage("/Images/Logo.png");
 
+        fm.configSet("logOnCrash", "0");
+
         if (!new File(filePath + "\\config.txt").exists()) {
             try {
                 createConfigFile();
@@ -330,7 +332,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                         "Amend Contract?", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null,
                         new String[]{"Amend", "Cancel"}, "") == 0) {
                     updateLoadBar("Amending Contract " + contract.getName(), 1);
-                    sql.reuploadContract(fc);
+                    sql.amendContract(fc);
                     updateLoadBar("Removing Contract " + contract.getName(), 1);
                     fm.deleteDir(contract.getAbsolutePath());
                     return "\n[PASSED]-" + contract.getName();
@@ -641,35 +643,27 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         try {
             products = SudoSQL.getProducts(filePath);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e.getMessage(), "INVALID Products",
-                    JOptionPane.WARNING_MESSAGE);
-            e.printStackTrace();
+            Log.logLine(e.getMessage());
         }
         try {
             contracts = SudoSQL.getContracts(filePath);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e.getMessage(), "INVALID Contract details",
-                    JOptionPane.WARNING_MESSAGE);
-            e.printStackTrace();
+            Log.logLine(e.getMessage());
         }
         try {
             contractHeadings = SudoSQL.getContractHeading(filePath);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e.getMessage(), "INVALID contract headings",
-                    JOptionPane.WARNING_MESSAGE);
-            e.printStackTrace();
+            Log.logLine(e.getMessage());
         }
         try {
             headingLines = SudoSQL.getHeadingLines(filePath);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e.getMessage(), "INVALID heading line", JOptionPane.WARNING_MESSAGE);
-            e.printStackTrace();
+            Log.logLine(e.getMessage());
         }
         try {
             qProducts = SudoSQL.getQproducts(filePath);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, e.getMessage(), "INVALID qProduct", JOptionPane.WARNING_MESSAGE);
-            e.printStackTrace();
+            Log.logLine(e.getMessage());
         }
 
         String[] engineers = SudoSQL.getEngineers(filePath);

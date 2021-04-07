@@ -135,7 +135,7 @@ public class SQLInterface {
         return r.equals("1");
     }
 
-    public String reuploadContract(FullContract fullContract) {
+    public String amendContract(FullContract fullContract) {
         ArrayList<String[][]> headingLines = new ArrayList<>();
         if (!contractExists(fullContract.details.contractID))
             return "The contract " + fullContract.details.contractID + " does not exist.\nYou can save the contract " +
@@ -234,6 +234,8 @@ public class SQLInterface {
     public String check(String s) {
         for (String a : illegalCharacters)
             s = s.replaceAll(a, "");
+        if (s.isEmpty())
+            s = "No Title";
         return s;
     }
 

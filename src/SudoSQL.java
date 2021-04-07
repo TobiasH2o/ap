@@ -13,7 +13,7 @@ public class SudoSQL {
 
 
     public static FullContract getContract(Contract contract, ContractHeading[] contractHeadings,
-                                           HeadingLine[] headingLines, Product[] products, Qproduct[] qproducts) {
+                                           HeadingLine[] headingLines, Product[] products, Qproduct[] qproducts){
         FullContract fc = new FullContract();
         fc.setDetails(contract);
         Log.logLine("SudoSQL-Contractor " + contract.contractor);
