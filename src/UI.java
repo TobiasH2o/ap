@@ -46,7 +46,9 @@ public class UI extends JPanel implements ActionListener, WindowListener {
     private final String filePath;
     // Builds and views contracts, Must be handed Contract by parent
     private final ContractInterface ci;
-
+    private final String version;
+    private final boolean test;
+    private final boolean offlineMode;
     private FullContract fullContract = new FullContract();
     private String ip = "";
     private Contract[] contracts;
@@ -60,9 +62,6 @@ public class UI extends JPanel implements ActionListener, WindowListener {
     private String loadingBarTxtValue = "";
     private String username = "";
     private String password = "";
-    private final String version;
-    private final boolean test;
-    private final boolean offlineMode;
 
     public UI(JFrame frame) {
 
@@ -98,6 +97,8 @@ public class UI extends JPanel implements ActionListener, WindowListener {
 
         logo = fm.loadImage("/Images/Logo.png");
 
+        fm.configSet("logOnCrash", "0");
+
         if (!new File(filePath + "\\config.txt").exists()) {
             try {
                 createConfigFile();
@@ -106,13 +107,12 @@ public class UI extends JPanel implements ActionListener, WindowListener {
             }
         }
 
-        if (!getCurrentVersion().equalsIgnoreCase(fm.configString("version")))
-            try {
-                new File(filePath + "\\config.txt").delete();
-                createConfigFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        if (!getCurrentVersion().equalsIgnoreCase(fm.configString("version"))) try {
+            new File(filePath + "\\config.txt").delete();
+            createConfigFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         test = fm.configBoolean("testing");
         version = fm.configString("version");
@@ -214,10 +214,8 @@ public class UI extends JPanel implements ActionListener, WindowListener {
     }
 
     private void checkLogging() {
-        if (fm.configBoolean("log"))
-            Log.setOutput(filePath + "\\errorLogs\\" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy" +
-                    "-MM" +
-                    "-dd-hh-mm")) + ".txt");
+        if (fm.configBoolean("log")) Log.setOutput(filePath + "\\errorLogs\\" + LocalDateTime.now()
+                .format(DateTimeFormatter.ofPattern("yyyy" + "-MM" + "-dd-hh-mm")) + ".txt");
         Log.logLine("====================================Logging Started====================================");
 
     }
@@ -230,7 +228,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
             if (getDayDiff(oDate) > 7) {
                 JOptionPane.showMessageDialog(this,
                         "ALERT: It has been " + getDayDiff(oDate) + " days since you were last " +
-                                "online. Please sync with the database.");
+                        "online. Please sync with the database.");
                 fm.deleteDir(filePath + "\\Data");
                 fm.deleteDir(filePath + "\\Tables");
                 fm.buildDirectory(filePath);
@@ -309,12 +307,12 @@ public class UI extends JPanel implements ActionListener, WindowListener {
 
                     StringBuilder results = new StringBuilder("Result:");
 
-                    for (int i = 0; i < contracts.length; i++) {
+                    for (int i = 0;i < contracts.length;i++) {
                         if (selecList.checkItemOption(0, i)) results.append(uploadContract(contracts[i]));
                         if (selecList.checkItemOption(1, i)) fm.deleteDir(contracts[i].getAbsolutePath());
                     }
-                    if (results.length() != 7)
-                        JOptionPane.showMessageDialog(this, results, "Server Sync Report", JOptionPane.INFORMATION_MESSAGE);
+                    if (results.length() != 7) JOptionPane
+                            .showMessageDialog(this, results, "Server Sync Report", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
         } catch (IOException ioException) {
@@ -330,11 +328,11 @@ public class UI extends JPanel implements ActionListener, WindowListener {
             fc = loadContract(contract);
             if (sql.contractExists(fc.details.contractID)) {
                 if (JOptionPane.showOptionDialog(this, "Contract " + fc.fullContractID() +
-                                " could not be uploaded as a duplicate ID is on the database.\n You can instead amend the contract. This will overwrite the current contract on the server and can not be undone.",
+                                                       " could not be uploaded as a duplicate ID is on the database.\n You can instead amend the contract. This will overwrite the current contract on the server and can not be undone.",
                         "Amend Contract?", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null,
                         new String[]{"Amend", "Cancel"}, "") == 0) {
                     updateLoadBar("Amending Contract " + contract.getName(), 1);
-                    sql.reuploadContract(fc);
+                    sql.amendContract(fc);
                     updateLoadBar("Removing Contract " + contract.getName(), 1);
                     fm.deleteDir(contract.getAbsolutePath());
                     return "\n[PASSED]-" + contract.getName();
@@ -408,13 +406,11 @@ public class UI extends JPanel implements ActionListener, WindowListener {
             }
         }
 
-        if (qProducts.length > 0)
-            if (qProducts[0].length() > 0)
-                for (String s : qProducts) {
-                    qproducts.add(new Qproduct((int) Convert.getIfNumeric(s.split("%50")[0]),
-                            (int) Convert.getIfNumeric(s.split("%50")[1]), Convert.getIfNumeric(s.split("%50")[2]),
-                            s.split("%50")[3]));
-                }
+        if (qProducts.length > 0) if (qProducts[0].length() > 0) for (String s : qProducts) {
+            qproducts.add(new Qproduct((int) Convert.getIfNumeric(s.split("%50")[0]),
+                    (int) Convert.getIfNumeric(s.split("%50")[1]), Convert.getIfNumeric(s.split("%50")[2]),
+                    s.split("%50")[3]));
+        }
 
 
         fullContract.contractHeadings = contractHeading;
@@ -469,14 +465,14 @@ public class UI extends JPanel implements ActionListener, WindowListener {
             if (sVersion.equals(version)) return;
             String[] segments = sVersion.split("\\.");
             String[] segments2 = version.split("\\.");
-            for (int i = 0; i < segments.length; i++) {
+            for (int i = 0;i < segments.length;i++) {
                 if (Convert.getIfNumeric(segments2[i]) > Convert.getIfNumeric(segments[i])) {
                     sql.updateVersion(version);
                     break;
                 } else if (Convert.getIfNumeric(segments2[i]) < Convert.getIfNumeric(segments[i])) {
                     JOptionPane.showMessageDialog(this,
                             "A new version of the software is available.[" + sVersion + "]\nIt is recommended " +
-                                    "that you update to maintain stability.");
+                            "that you update to maintain stability.");
                     break;
                 }
             }
@@ -491,7 +487,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         int days = 0;
         days -= Convert.getIfNumeric(oldDate.split("/")[2]);
         days -= Convert.getIfNumeric(oldDate.split("/")[0]) * 365;
-        for (int i = 0; i < Convert.getIfNumeric(oldDate.split("/")[1]); i++) {
+        for (int i = 0;i < Convert.getIfNumeric(oldDate.split("/")[1]);i++) {
             if (i % 2 == 0) {
                 days -= 31;
             } else if (i == 1) {
@@ -503,7 +499,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
 
         days += now.getDayOfMonth();
         days += now.getYear() * 365;
-        for (int i = 0; i < now.getMonthValue(); i++) {
+        for (int i = 0;i < now.getMonthValue();i++) {
             if (i % 2 == 0) {
                 days += 31;
             } else if (i == 1) {
@@ -569,10 +565,10 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                         SQLInterface.PASSWORD = password;
                         SQLInterface.USERNAME = username;
                         Log.logLine("Logged IP " + ip);
-                            serverFound = true;
-                            submit.setText("Go Online");
-                            submit.doClick();
-                            ci.setOffline(false);
+                        serverFound = true;
+                        submit.setText("Go Online");
+                        submit.doClick();
+                        ci.setOffline(false);
                     }
                 }
                 break;
@@ -649,11 +645,31 @@ public class UI extends JPanel implements ActionListener, WindowListener {
     private void loadData() {
         ArrayList<String> productCodesArr = new ArrayList<>(0);
 
-        products = SudoSQL.getProducts(filePath);
-        contracts = SudoSQL.getContracts(filePath);
-        contractHeadings = SudoSQL.getContractHeading(filePath);
-        headingLines = SudoSQL.getHeadingLines(filePath);
-        qProducts = SudoSQL.getQproducts(filePath);
+        try {
+            products = SudoSQL.getProducts(filePath);
+        } catch (Exception e) {
+            Log.logLine(e.getMessage());
+        }
+        try {
+            contracts = SudoSQL.getContracts(filePath);
+        } catch (Exception e) {
+            Log.logLine(e.getMessage());
+        }
+        try {
+            contractHeadings = SudoSQL.getContractHeading(filePath);
+        } catch (Exception e) {
+            Log.logLine(e.getMessage());
+        }
+        try {
+            headingLines = SudoSQL.getHeadingLines(filePath);
+        } catch (Exception e) {
+            Log.logLine(e.getMessage());
+        }
+        try {
+            qProducts = SudoSQL.getQproducts(filePath);
+        } catch (Exception e) {
+            Log.logLine(e.getMessage());
+        }
 
         String[] engineers = SudoSQL.getEngineers(filePath);
 

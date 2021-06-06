@@ -131,8 +131,7 @@ public class FileManager {
             bw = new BufferedWriter(fw);
             for (String dat : data) {
                 bw.append(dat.replaceAll("\n", "").replaceAll("\r", ""));
-                if(full)
-                    bw.newLine();
+                if(full) bw.newLine();
             }
             bw.close();
         } catch (IOException e) {
@@ -242,7 +241,6 @@ public class FileManager {
             }
             saveValue.add(tempArr.toArray(String[]::new));
 
-
             saveFile(file, saveValue.toArray(String[][]::new));
         } catch (IOException e) {
             e.printStackTrace();
@@ -266,6 +264,19 @@ public class FileManager {
 
     public boolean configBoolean(String entry) {
         return Convert.getBoolean(configString(entry));
+    }
+
+    public void configSet(String entry, String item){
+        try{
+            String[] data = readFile("\\config.txt");
+            for (int i = 0, dataLength = data.length;i < dataLength;i++) {
+                if (data[i].split("=")[0].equals(entry)) data[i] = entry + "=" + item;
+            }
+            Log.logLine(data);
+            saveFile("\\config.txt", data, true);
+        }catch(Exception e){
+            Log.logLine(e.getMessage());
+        }
     }
 
     public String configString(String entry){

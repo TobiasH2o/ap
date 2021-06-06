@@ -77,7 +77,8 @@ public class PortSniffer {
         }
     }
 
-    private boolean poke(String ip, String username, String password, int port) {// Returns true/false
+    private boolean poke(String ip, String username, String password, int port) {
+        // Returns true/false
         // depending on if
         // server is available
         try {
@@ -99,5 +100,4 @@ public class PortSniffer {
             return false;
         }
     }
-
 }

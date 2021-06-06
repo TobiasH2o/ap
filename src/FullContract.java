@@ -68,6 +68,7 @@ public class FullContract {
             if (ch.headingID == headingNumber) headingNumber++;
             else conflict = false;
         else conflict = false; while (conflict);
+        if(headingTitle.isBlank()) headingTitle = "void";
         contractHeadings.add(new ContractHeading(headingNumber, details.contractID, headingTitle));
         return headingNumber;
     }
