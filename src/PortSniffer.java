@@ -24,6 +24,7 @@ public class PortSniffer {
 
             if(!test) {
                 Log.logLine("checking for server on default");
+                //192.168.1.245
                 if (poke("192.168.1.245", username, password, 3306)) return "192.168.1.245";
                 Log.logLine("Failed to connect to default");
             }else {

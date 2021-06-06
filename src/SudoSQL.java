@@ -125,7 +125,7 @@ public class SudoSQL {
             ch = Files.lines(Paths.get(f)).map(line -> line.split("~~"))
                     .map(data -> new ContractHeading((int) Convert.getIfNumeric(data[0]), data[1], data[2]))
                     .collect(Collectors.toCollection(() -> new ArrayList<>(0)));
-        } catch (Exception ignore) {}
+        } catch (Exception e) {e.printStackTrace();}
         Log.logLine("Loaded ContractHeading");
 
         assert ch != null;

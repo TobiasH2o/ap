@@ -1,4 +1,4 @@
 version=1.5.6.0
 testing=0
-log=0
+log=1
 offlineMode=0

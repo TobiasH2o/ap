@@ -217,7 +217,7 @@ public class FileManager {
             ArrayList<String> tempArr = new ArrayList<>(0);
             ArrayList<String[]> saveValue = new ArrayList<>(0);
             saveValue.add(new String[]{contract.details.contractID, "" +
-                                                                    contract.details.contractDate, contract.details.companyName, contract.details.address1, contract.details.address2, contract.details.address3, contract.details.postcode, contract.details.deliveryMethod,
+                    contract.details.contractDate, contract.details.companyName, contract.details.address1, contract.details.address2, contract.details.address3, contract.details.postcode, contract.details.deliveryMethod,
                     "" + contract.details.deliveryDate,
                     "" + contract.details.quote, "" + contract.details.issued, contract.details.engineer,
                     contract.details.contractor});
@@ -233,7 +233,7 @@ public class FileManager {
                     chl.comment = "null";
                 }
                 tempArr.add(chl.headingLineID + "%50" + chl.headingID + "%50" + chl.productID + "%50" + chl.comment +
-                            "%50" + chl.quantity);
+                        "%50" + chl.quantity);
             }
             saveValue.add(tempArr.toArray(String[]::new));
             tempArr.clear();

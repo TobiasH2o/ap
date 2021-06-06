@@ -383,8 +383,13 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         ArrayList<Qproduct> qproducts = new ArrayList<>(0);
 
         for (String s : heading) {
-            contractHeading.add(new ContractHeading((int) Convert.getIfNumeric(s.split("%50")[0]), s.split("%50")[1],
+            if(!s.split("%50")[2].isBlank())
+                contractHeading.add(new ContractHeading((int) Convert.getIfNumeric(s.split("%50")[0]), s.split("%50")[1],
                     s.split("%50")[2]));
+            else{
+                contractHeading.add(new ContractHeading((int) Convert.getIfNumeric(s.split("%50")[0]), s.split("%50")[1],
+                        "BlankName"));
+            }
         }
 
         for (String s : headingLine) {
