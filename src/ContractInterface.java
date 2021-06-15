@@ -76,6 +76,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         address2.setToolTipText("Address line 2");
         address3.setToolTipText("Address line 3");
         postcode.setToolTipText("Postcode");
+        quote.setSelected(true);
 
         Container contractBox = new Container();
         contractBox.setLayout(new BoxLayout(contractBox, BoxLayout.X_AXIS));
@@ -636,8 +637,8 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
 
             case "Duplicate":
                 contractNumber.setText("");
-                engineer.setSelectedItem("OTHER");
-                quote.setSelected(false);
+                quote.setSelected(true);
+                engineer.setSelectedItem(0);
                 fullContract.details.clear();
                 issued = false;
                 enableEdits();
@@ -719,7 +720,8 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
             case "Clear":
                 contractNumber.setText("");
                 entries.clear();
-                engineer.setSelectedItem("OTHER");
+                engineer.setSelectedIndex(0);
+                quote.setSelected(true);
                 companyName.setText("");
                 address1.setText("");
                 address2.setText("");
