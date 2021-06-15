@@ -182,6 +182,8 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         buPanel.add(queryBox);
         buPanel.add(uploadDataButton);
 
+        frame.setTitle("Version: " + fm.configString("version"));
+
         repaint();
 
         checkDates();
