@@ -26,6 +26,7 @@ public class Convert {
 
     // Converts 1 to True else to False
     public static boolean getBoolean(String x) {
+        if(x == null) return false;
         if(isNumeric(x)){
             return getIfNumeric(x) == 1;
         }else{
