@@ -188,6 +188,9 @@ public class Printer implements Printable, ActionListener {
                     int costPosition = 0;
                     for (int q = 0;q < costs.length;q++) {
                         Log.logLine(i);
+                        Log.logLine(q);
+                        if(costs[q]== null)
+                            break;
                         if (costs[q][1].equals("" + i)) {
                             costPosition = q;
                             break;
@@ -624,7 +627,7 @@ public class Printer implements Printable, ActionListener {
     public boolean prepEngies() {
         description = 1;
         title = "Engineer";
-        sumTable = 4;
+        sumTable = 3;
         sumName = "Cost";
         printDetails.clear();
         printColumns = new String[]{"", "0.0", "Quantity", "0.05", "Description", "0.2", "Make time", "0.75", "Cost", "0.9"};
@@ -859,10 +862,12 @@ public class Printer implements Printable, ActionListener {
                 }
             }
         }
+        printDetails.add(new String[]{"CLIPS SELECTED & PROVIDED"});
         for (int i = 0;i < pipeSizes.size();i++)
-            printDetails.add(new String[]{"---", "---", "---", (pipeSizes.get(i)[1] + 1) + " " + pipeSizes.get(i)[0] +
+            printDetails.add(new String[]{"---", "---", "---", (pipeSizes.get(i)[1] - 1) + " " + pipeSizes.get(i)[0] +
                                                         "mm clips are recommended. Currently you have" + " " +
-                                                        clipSizes.get(i)[1], "---"});
+                                                        clipSizes.get(i)[1], "00.00"});
+        sumType = "MONEY";
         return printDetails.size() != 0;
     }
 

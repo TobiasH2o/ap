@@ -1,7 +1,7 @@
-version=1.5.0.0
+version=1.8.0.2
 log=0
-testing=0
-offlineMode=0
+testing=1
+offlineMode=1
 logOnCrash=1
 crashCount=0
 productCrash=0
