@@ -888,7 +888,7 @@ public class Printer implements Printable, ActionListener {
         if(suspension){
             ArrayList<String[]> suspensionSizes = new ArrayList<>();
             for(int i = 0; i < pipeSizes.size(); i++){
-                suspensionSizes.get(new String[]{"" + pipeSizes.get(i)[0], "0"});
+                suspensionSizes.add(new String[]{"" + pipeSizes.get(i)[0], "0"});
             }
         }
 
