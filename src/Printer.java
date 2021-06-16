@@ -624,7 +624,7 @@ public class Printer implements Printable, ActionListener {
     public boolean prepEngies() {
         description = 1;
         title = "Engineer";
-        sumTable = 3;
+        sumTable = 4;
         sumName = "Cost";
         printDetails.clear();
         printColumns = new String[]{"", "0.0", "Quantity", "0.05", "Description", "0.2", "Make time", "0.75", "Cost", "0.9"};
