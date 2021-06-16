@@ -302,16 +302,6 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         frame.setVisible(true);
     }
 
-    public void hideMenu() {
-        if (issued) {
-            disableEdits();
-        } else {
-            enableEdits();
-        }
-        refresh();
-        frame.setVisible(false);
-    }
-
     public void redraw() {
         idCont.removeAll();
         quantCont.removeAll();

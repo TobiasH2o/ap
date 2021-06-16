@@ -75,7 +75,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
             InputStream in = p.getInputStream();
             byte[] b = new byte[in.available()];
             if (in.read(b) == 0) myDocuments = JOptionPane.showInputDialog(this,
-                    "A fatal error has occurred. \n Please" + " " + "provide your " + "documents folder.");
+                    "A fatal error has occurred. \n Please provide your documents folder.");
             else {
 
                 myDocuments = new String(b);
