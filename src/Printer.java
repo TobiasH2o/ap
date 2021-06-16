@@ -627,7 +627,7 @@ public class Printer implements Printable, ActionListener {
     public boolean prepEngies() {
         description = 1;
         title = "Engineer";
-        sumTable = 3;
+        sumTable = 4;
         sumName = "Cost";
         printDetails.clear();
         printColumns = new String[]{"", "0.0", "Quantity", "0.05", "Description", "0.2", "Make time", "0.75", "Cost", "0.9"};
@@ -820,10 +820,26 @@ public class Printer implements Printable, ActionListener {
         sumTable = 4;
         printDetails = sort(2, printDetails);
         printDetails = sumDupes(printDetails, new int[]{1, 3}, new int[]{2, 5});
+        printDetails.removeIf(x -> x.length != 5);
+        printDetails.addAll(calculateClips(false));
+        sumType = "MONEY";
+        return printDetails.size() != 0;
+    }
+
+    public ArrayList<String[]> calculateClips(boolean suspension){
+        ArrayList<String[]> clips = new ArrayList<>();
+        for (HeadingLine hl : fc.contractHeadingLine)
+            for (Product pr : fc.products)
+                if (hl.productID.equalsIgnoreCase(pr.getProductID())) {
+                    if (pr.getProductType().equalsIgnoreCase("BoughtInNorfab")) {
+                        if(!pr.getProductID().contains("NN") && !pr.getProductID().contains("NC")){
+                            clips.add(new String[]{pr.getProductID().split("N")[0], hl.quantity + ""});
+                        }
+                    }
+                }
         ArrayList<int[]> pipeSizes = new ArrayList<>();
         ArrayList<int[]> clipSizes = new ArrayList<>();
         int currentSize;
-        printDetails.removeIf(x -> x.length != 5);
         for (String[] strings : printDetails) {
             int newVal = Integer.parseInt(strings[0].split("N")[0]);
             boolean add = true;
@@ -838,37 +854,45 @@ public class Printer implements Printable, ActionListener {
                 clipSizes.add(new int[]{newVal, 0});
             }
         }
-        for (String[] detail : printDetails) {
+        for (String[] detail : clips) {
             currentSize = -1;
             if (!detail[0].contains("NN") && !detail[0].contains("NC")) {
                 currentSize = Integer.parseInt(detail[0].split("N")[0]);
             }
             for (int[] pipeSize : pipeSizes) {
                 if (pipeSize[0] == currentSize) {
-                    pipeSize[1] += Integer.parseInt(detail[2]);
+                    pipeSize[1] += Integer.parseInt(detail[1]);
                     break;
                 }
             }
         }
-        for (String[] printDetail : printDetails) {
+        for (String[] printDetail : clips) {
             currentSize = -1;
             if (printDetail[0].contains("NC")) {
                 currentSize = Integer.parseInt(printDetail[0].split("N")[0]);
             }
             for (int[] clipSize : clipSizes) {
                 if (clipSize[0] == currentSize) {
-                    clipSize[1] += Integer.parseInt(printDetail[2]);
+                    clipSize[1] += Integer.parseInt(printDetail[1]);
                     break;
                 }
             }
         }
-        printDetails.add(new String[]{"CLIPS SELECTED & PROVIDED"});
+        ArrayList<String[]> returnString = new ArrayList<>();
+        returnString.add(new String[]{"CLIPS SELECTED & PROVIDED"});
         for (int i = 0;i < pipeSizes.size();i++)
-            printDetails.add(new String[]{"---", "---", "---", (pipeSizes.get(i)[1] - 1) + " " + pipeSizes.get(i)[0] +
-                                                        "mm clips are recommended. Currently you have" + " " +
-                                                        clipSizes.get(i)[1], "00.00"});
-        sumType = "MONEY";
-        return printDetails.size() != 0;
+            returnString.add(new String[]{"---", "---", "---", (pipeSizes.get(i)[1] - 1) + " " + pipeSizes.get(i)[0] +
+                                                               "mm clips are recommended. Currently you have" + " " +
+                                                               clipSizes.get(i)[1], "00.00"});
+
+        if(suspension){
+            ArrayList<String[]> suspensionSizes = new ArrayList<>();
+            for(int i = 0; i < pipeSizes.size(); i++){
+                suspensionSizes.get(new String[]{"" + pipeSizes.get(i)[0], "0"});
+            }
+        }
+
+        return returnString;
     }
 
     public int length() {return title.length();}

@@ -61,6 +61,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
     private String[] productCode = new String[0];
     private final SuggestionField sf = new SuggestionField(productCode, frame);
     private Product[] products = new Product[0];// Contains all products available
+    private boolean saved = false;
 
     public ContractInterface(boolean offlineMode) {
 
@@ -269,6 +270,16 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
 
     }
 
+    public void checkSave(){
+        int option = 1;
+        if(!saved)
+            option = (JOptionPane.showOptionDialog(null, "Contract may not of been saved. Save program?", "Save",
+                    JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, new String[]{"Save", "Don't" +
+                                                                                                       " " + "save"}, "Save"));
+        if(option == 0)
+            save.doClick();
+    }
+
     public void setUsername(String username) {
         this.username = username;
     }
@@ -441,6 +452,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
     }
 
     public void setContractDetails(FullContract fc) {
+        saved = true;
         heading = 0;
         issued = false;
         entries.clear();
@@ -512,6 +524,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
     }
 
     public void addField(String ID, String comment, String quant) {
+        saved = false;
         HintTextField a = new HintTextField("ID", HintTextField.CENTER_HIDDEN);
         HintTextField b = new HintTextField("Comment", HintTextField.CENTER_HIDDEN);
         HintTextField c = new HintTextField("Quantity", HintTextField.CENTER_HIDDEN);
@@ -670,6 +683,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                                 fm.saveContract(fullContract, new File(fd.getSelectedFile().getPath() + ".cot"));
                             else fm.saveContract(fullContract, new File(fd.getSelectedFile().getPath()));
                         }
+                        saved = true;
                         JOptionPane.showMessageDialog(frame, "Saved contract.");
                     }
                 } else if (sql.contractExists(cn) && su) {
@@ -678,7 +692,9 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                             "exists.\nDo you wish to continue to overwrite " + cn + "?") == 0) JOptionPane
                             .showMessageDialog(this, sql.amendContract(fullContract), "Contract amend response",
                                     JOptionPane.INFORMATION_MESSAGE);
+                    saved = true;
                 } else if (su) {
+                    saved = true;
                     JOptionPane.showMessageDialog(this, sql.pushContract(fullContract), "Contract upload response",
                             JOptionPane.INFORMATION_MESSAGE);
                 }
@@ -708,6 +724,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                 break;
 
             case "Clear":
+                checkSave();
                 contractNumber.setText("");
                 entries.clear();
                 engineer.setSelectedIndex(0);
@@ -738,6 +755,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                 makeIssued.setVisible(true);
                 break;
             case "print":
+                checkSave();
                 fullContract = getContract();
                 makeIssued.setVisible(false);
                 if (e.getActionCommand().split(",")[1].equalsIgnoreCase("issue")) {
@@ -918,7 +936,6 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         products = productsL;
     }
 
-
     public String[] sort(String[] arr) {
         int n = arr.length;
         // Build heap (rearrange array)
@@ -955,7 +972,6 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
             heapify(arr, n, largest);
         }
     }
-
 
     @Override
     public void keyTyped(KeyEvent e) {
