@@ -72,14 +72,12 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         String OS = (System.getProperty("os.name")).toUpperCase();
         //to determine what the workingDirectory is.
         //if it is some version of Windows
-        if (OS.contains("WIN"))
-        {
+        if (OS.contains("WIN")) {
             //it is simply the location of the "AppData" folder
             myDocuments = System.getenv("AppData");
         }
         //Otherwise, we assume Linux or Mac
-        else
-        {
+        else {
             //in either case, we would start in the user's home directory
             myDocuments = System.getProperty("user.home");
             //if we are on a Mac, we are not done, we look for "Application Support"
@@ -192,7 +190,6 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         submit.doClick();
 
     }
-
 
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
@@ -471,7 +468,8 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                             "that you update to maintain stability.\nClick okay to open a webpage. From there you can" +
                             " download the latest version");
                     try {
-                        Desktop.getDesktop().browse(new URI("https://drive.google.com/drive/folders/12vxGlNtRQ_qgaXYxjEOoabeG4dN7rwpY?usp=sharing"));
+                        Desktop.getDesktop().browse(new URI(
+                                "https://drive.google.com/drive/folders/12vxGlNtRQ_qgaXYxjEOoabeG4dN7rwpY?usp=sharing"));
                     } catch (IOException | URISyntaxException e) {
                         e.printStackTrace();
                     }
