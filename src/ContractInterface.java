@@ -69,7 +69,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         this.offlineMode = offlineMode;
         entries.add(new Entry());
 
-        printer = new Printer(frame);
+        printer = new Printer(frame, fm.configString("version"));
 
         contractNumber.setToolTipText("Contract number");
         companyName.setToolTipText("Company name");

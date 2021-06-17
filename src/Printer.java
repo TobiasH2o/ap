@@ -22,6 +22,7 @@ import java.util.List;
 
 public class Printer implements Printable, ActionListener {
 
+    private final String sysVersion;
     private final int lineBuffer = 5;
     private final int closeLineBuffer = 2;
     private final JCheckBox engineersCopy = new JCheckBox();
@@ -59,7 +60,7 @@ public class Printer implements Printable, ActionListener {
     private PrinterJob job;
     private String sumType = "";
 
-    public Printer(JFrame frame) {
+    public Printer(JFrame frame, String sysVersion) {
         // Stores logo for print sheet
 
         printTypes = new JDialog(frame);
@@ -157,6 +158,7 @@ public class Printer implements Printable, ActionListener {
         printTypes.setSize(300, 175);
         printTypes.setLocationRelativeTo(null);
 
+        this.sysVersion = sysVersion;
     }
 
     public boolean gotContract() {
@@ -373,7 +375,7 @@ public class Printer implements Printable, ActionListener {
                     summnation = BigDecimal.ZERO;
                 }
                 costCounter++;
-            } else if (sumTable > -1)
+            } else if (sumTable > -1) if (printDetails.get(i).length > sumTable)
                 if (isNumeric(printDetails.get(i)[sumTable].replaceAll("£", "").replaceAll(",", ""))) summnation =
                         summnation.add(getIfNumeric(
                                 printDetails.get(i)[sumTable].replaceAll("£", "").replaceAll(",", "")));
@@ -612,7 +614,7 @@ public class Printer implements Printable, ActionListener {
         LocalDateTime now = LocalDateTime.now();
         g2.setFont(basicFont);
 
-        g2.drawString(dtf.format(now), 10, (int) pf.getImageableHeight() - 5);
+        g2.drawString(dtf.format(now) + "  -  V: " + sysVersion, 10, (int) pf.getImageableHeight() - 5);
         if (sPos != null) {
 
             g2.drawString("page" + (pi + 1) + " of " + (sPos.length - 1), (int) pf.getImageableWidth() - 10 -
@@ -894,7 +896,7 @@ public class Printer implements Printable, ActionListener {
             }
         }
 
-        String[] printPositions = new String[printColumns.length/2];
+        String[] printPositions = new String[printColumns.length / 2];
         int printPos = description;
         Arrays.fill(printPositions, "---");
         ArrayList<String[]> returnString = new ArrayList<>();
@@ -904,13 +906,16 @@ public class Printer implements Printable, ActionListener {
                                        "mm clips are recommended. Currently you have " + clipSizes.get(i)[1];
             returnString.add(printPositions.clone());
         }
+        if (returnString.size() == 1) returnString.remove(0);
         if (suspension) {
             returnString.add(new String[]{"SUSPENSION BANDS"});
             for (int i = 0;i < supportSizes.size();i++) {
-                printPositions[printPos] = ((pipeSizes.get(i)[1]+2)/3) + " " + pipeSizes.get(i)[0] +
-                                           "mm suspension bands are recommended. Currently you have " + supportSizes.get(i)[1];
+                printPositions[printPos] = ((pipeSizes.get(i)[1] + 2) / 3) + " " + pipeSizes.get(i)[0] +
+                                           "mm suspension bands are recommended. Currently you have " +
+                                           supportSizes.get(i)[1];
                 returnString.add(printPositions.clone());
             }
+            if (supportSizes.size() == 0) returnString.remove(returnString.size() - 1);
         }
 
         return returnString;
