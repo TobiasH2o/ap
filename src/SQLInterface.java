@@ -21,7 +21,6 @@ public class SQLInterface {
         PASSWORD = password;
     }
 
-
     public boolean contractExists(String contractID) {
         contractID = check(contractID);
         String[][] data;

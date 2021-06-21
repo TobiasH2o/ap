@@ -1,6 +1,6 @@
-version=1.6.6.0
-testing=0
+version=1.8.5.2
 log=0
+testing=0
 offlineMode=0
 logOnCrash=1
 crashCount=0

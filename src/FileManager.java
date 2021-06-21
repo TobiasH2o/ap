@@ -46,7 +46,7 @@ public class FileManager {
         }
     }
 
-    public static boolean checkFile(String filePath) {
+    public static void checkFile(String filePath) {
         if (!filePath.endsWith(".txt")) filePath += ".txt";
         File f = new File(filePath);
         Log.logLine("Checking file " + f);
@@ -60,9 +60,7 @@ public class FileManager {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            return false;
         }
-        return true;
     }
 
     static private void hideFile(File file) {

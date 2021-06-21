@@ -9,6 +9,7 @@ import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
@@ -65,29 +66,25 @@ public class UI extends JPanel implements ActionListener, WindowListener {
 
     public UI(JFrame frame) {
 
-        String myDocuments = null;
+        String myDocuments;
 
-        try {
-            Process p = Runtime.getRuntime()
-                    .exec("reg query \"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders\" /v personal");
-            p.waitFor();
-
-            InputStream in = p.getInputStream();
-            byte[] b = new byte[in.available()];
-            if (in.read(b) == 0) myDocuments = JOptionPane.showInputDialog(this,
-                    "A fatal error has occurred. \n Please" + " " + "provide your " + "documents folder.");
-            else {
-
-                myDocuments = new String(b);
-                myDocuments = myDocuments.split("\\s\\s+")[4];
-            }
-            in.close();
-
-            Log.logLine(myDocuments);
-
-        } catch (Throwable t) {
-            t.printStackTrace();
+        //here, we assign the name of the OS, according to Java, to a variable...
+        String OS = (System.getProperty("os.name")).toUpperCase();
+        //to determine what the workingDirectory is.
+        //if it is some version of Windows
+        if (OS.contains("WIN")) {
+            //it is simply the location of the "AppData" folder
+            myDocuments = System.getenv("AppData");
         }
+        //Otherwise, we assume Linux or Mac
+        else {
+            //in either case, we would start in the user's home directory
+            myDocuments = System.getProperty("user.home");
+            //if we are on a Mac, we are not done, we look for "Application Support"
+            myDocuments += "/Library/Application Support";
+        }
+        //we are now free to set the workingDirectory to the subdirectory that is our
+        //folder.
 
         System.out.println(myDocuments);
 
@@ -182,6 +179,8 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         buPanel.add(queryBox);
         buPanel.add(uploadDataButton);
 
+        frame.setTitle("Version: " + fm.configString("version"));
+
         repaint();
 
         checkDates();
@@ -191,7 +190,6 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         submit.doClick();
 
     }
-
 
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
@@ -472,7 +470,14 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                 } else if (Convert.getIfNumeric(segments2[i]) < Convert.getIfNumeric(segments[i])) {
                     JOptionPane.showMessageDialog(this,
                             "A new version of the software is available.[" + sVersion + "]\nIt is recommended " +
-                            "that you update to maintain stability.");
+                            "that you update to maintain stability.\nClick okay to open a webpage. From there you can" +
+                            " download the latest version");
+                    try {
+                        Desktop.getDesktop().browse(new URI(
+                                "https://drive.google.com/drive/folders/12vxGlNtRQ_qgaXYxjEOoabeG4dN7rwpY?usp=sharing"));
+                    } catch (IOException | URISyntaxException e) {
+                        e.printStackTrace();
+                    }
                     break;
                 }
             }

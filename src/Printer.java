@@ -22,6 +22,7 @@ import java.util.List;
 
 public class Printer implements Printable, ActionListener {
 
+    private final String sysVersion;
     private final int lineBuffer = 5;
     private final int closeLineBuffer = 2;
     private final JCheckBox engineersCopy = new JCheckBox();
@@ -32,6 +33,7 @@ public class Printer implements Printable, ActionListener {
     private final JCheckBox pipes = new JCheckBox();
     private final JCheckBox loading = new JCheckBox();
     private final JCheckBox erector = new JCheckBox();
+    private final JCheckBox norfab = new JCheckBox();
     private final JDialog printTypes;
     private final Font titleFont = new Font("Dialog", Font.BOLD, 34);
     private final Font subHeading = new Font("Dialog", Font.ITALIC, 12);
@@ -58,7 +60,7 @@ public class Printer implements Printable, ActionListener {
     private PrinterJob job;
     private String sumType = "";
 
-    public Printer(JFrame frame) {
+    public Printer(JFrame frame, String sysVersion) {
         // Stores logo for print sheet
 
         printTypes = new JDialog(frame);
@@ -71,6 +73,7 @@ public class Printer implements Printable, ActionListener {
         pipes.setText("Pipes");
         loading.setText("Loading");
         erector.setText("Erector");
+        norfab.setText("Norfab");
         engineersCopy.setHorizontalTextPosition(SwingConstants.LEFT);
         engineersCopy.setFocusPainted(false);
         engineersCopy.setBorderPainted(true);
@@ -103,6 +106,10 @@ public class Printer implements Printable, ActionListener {
         erector.setFocusPainted(false);
         erector.setBorderPainted(true);
         erector.setHorizontalAlignment(SwingConstants.CENTER);
+        norfab.setHorizontalTextPosition(SwingConstants.LEFT);
+        norfab.setFocusPainted(false);
+        norfab.setBorderPainted(true);
+        norfab.setHorizontalAlignment(SwingConstants.CENTER);
 
         JButton confirmPrintButton = new JButton("Confirm");
         confirmPrintButton.addActionListener(this);
@@ -138,17 +145,20 @@ public class Printer implements Printable, ActionListener {
         c.gridy = 3;
         c.gridx = 1;
         printTypes.add(erector, c);
+        c.gridy = 4;
+        c.gridx = 0;
+        printTypes.add(norfab, c);
         c.anchor = GridBagConstraints.CENTER;
         c.weightx = 1;
         c.weighty = 0.5;
-        c.gridy = 4;
+        c.gridy = 5;
         c.gridx = 0;
         c.gridwidth = 2;
         printTypes.add(confirmPrintButton, c);
-        //200, 175
         printTypes.setSize(300, 175);
         printTypes.setLocationRelativeTo(null);
 
+        this.sysVersion = sysVersion;
     }
 
     public boolean gotContract() {
@@ -182,6 +192,8 @@ public class Printer implements Printable, ActionListener {
                     int costPosition = 0;
                     for (int q = 0;q < costs.length;q++) {
                         Log.logLine(i);
+                        Log.logLine(q);
+                        if (costs[q] == null) break;
                         if (costs[q][1].equals("" + i)) {
                             costPosition = q;
                             break;
@@ -217,7 +229,7 @@ public class Printer implements Printable, ActionListener {
                         Math.max(g.getFontMetrics(subHeading).getHeight(), g.getFontMetrics(basicFont).getHeight() * 2);
             } else {// Not a subheading
                 g2.setFont(basicFont);
-                for (int j = 0;j < printDetails.get(i).length;j++) {
+                for (int j = 1;j < printDetails.get(i).length;j++) {
                     if (!printDetails.get(i)[j].contains("##")) {// !(Marks a new line)
                         if (printColumns[j * 2].equals("Quantity")) g2.drawString(printDetails.get(i)[j],
                                 (int) ((pf.getImageableWidth() * widthSize[j + 1]) -
@@ -231,7 +243,7 @@ public class Printer implements Printable, ActionListener {
                                     (int) cSize);
                     }
                 }
-                for (int j = 0;j < printDetails.get(i).length;j++) {
+                for (int j = 1;j < printDetails.get(i).length;j++) {
                     if (printDetails.get(i)[j].contains("##")) { // Places a new line in every position that
                         // contains the key ##
                         String[] print = printDetails.get(i)[j].split("##");
@@ -363,7 +375,7 @@ public class Printer implements Printable, ActionListener {
                     summnation = BigDecimal.ZERO;
                 }
                 costCounter++;
-            } else if (sumTable > -1)
+            } else if (sumTable > -1) if (printDetails.get(i).length > sumTable)
                 if (isNumeric(printDetails.get(i)[sumTable].replaceAll("£", "").replaceAll(",", ""))) summnation =
                         summnation.add(getIfNumeric(
                                 printDetails.get(i)[sumTable].replaceAll("£", "").replaceAll(",", "")));
@@ -412,7 +424,7 @@ public class Printer implements Printable, ActionListener {
 
                         cost = fixCost(cost);
 
-                        returnValue.add(new String[]{
+                        returnValue.add(new String[]{"",
                                 "" + contractHeadingLine.quantity, getDesc(products, contractHeadingLine), df.format(
                                 products.getMakeTime() * contractHeadingLine.quantity), cost});
                         break;
@@ -433,7 +445,7 @@ public class Printer implements Printable, ActionListener {
         for (HeadingLine contractHeadingLine : fc.contractHeadingLine)
             if (headingNumber == contractHeadingLine.headingID) for (Product products : fc.products)
                 if (contractHeadingLine.productID.equalsIgnoreCase(products.getProductID())) {
-                    returnValues.add(new String[]{
+                    returnValues.add(new String[]{contractHeadingLine.productID,
                             "" + contractHeadingLine.quantity, getDesc(products, contractHeadingLine)});
                     break;
 
@@ -602,7 +614,7 @@ public class Printer implements Printable, ActionListener {
         LocalDateTime now = LocalDateTime.now();
         g2.setFont(basicFont);
 
-        g2.drawString(dtf.format(now), 10, (int) pf.getImageableHeight() - 5);
+        g2.drawString(dtf.format(now) + "  -  V: " + sysVersion, 10, (int) pf.getImageableHeight() - 5);
         if (sPos != null) {
 
             g2.drawString("page" + (pi + 1) + " of " + (sPos.length - 1), (int) pf.getImageableWidth() - 10 -
@@ -618,10 +630,11 @@ public class Printer implements Printable, ActionListener {
     public boolean prepEngies() {
         description = 1;
         title = "Engineer";
-        sumTable = 3;
+        sumTable = 4;
         sumName = "Cost";
         printDetails.clear();
-        printColumns = new String[]{"Quantity", "0.05", "Description", "0.2", "Make time", "0.75", "Cost", "0.9"};
+        printColumns =
+                new String[]{"", "0.0", "Quantity", "0.05", "Description", "0.2", "Make time", "0.75", "Cost", "0.9"};
         for (int i = 0;i < fc.contractHeadings.size();i++) {
             printDetails.add(new String[]{fc.contractHeadings.get(i).headingTitle});
             String[][] section = getSectionDetailsEngi(fc.contractHeadings.get(i).headingID);
@@ -633,57 +646,58 @@ public class Printer implements Printable, ActionListener {
     }
 
     public boolean prepBends() {
-        this.description = 1;
+        this.description = 2;
         title = "BENDS";
         printDetails.clear();
-        printColumns = new String[]{"Quantity", "0.05", "Description", "0.2", "Make time", "0.75"};
+        printColumns = new String[]{"", "0.0", "Quantity", "0.05", "Description", "0.2", "Make time", "0.75"};
         for (ContractHeading ch : fc.contractHeadings)
             for (HeadingLine chl : fc.contractHeadingLine)
                 if (ch.headingID == chl.headingID) for (Product pr : fc.products)
                     if (pr.getProductID().equalsIgnoreCase(chl.productID))
                         if (pr.getProductType().equalsIgnoreCase("bends")) {
-                            printDetails.add(new String[]{
+                            printDetails.add(new String[]{chl.productID,
                                     "" + chl.quantity, getDesc(pr, chl), df.format(pr.getMakeTime() * chl.quantity)});
                             break;
                         }
-        printDetails = sort(1, printDetails);
-        printDetails = sumDupes(printDetails, new int[]{1}, new int[]{0, 2});
-        sumTable = 2;
+        printDetails = sort(2, printDetails);
+        printDetails = sumDupes(printDetails, new int[]{0, 2}, new int[]{1, 3});
+        sumTable = 3;
         sumName = "Make time";
         return printDetails.size() != 0;
     }
 
     public boolean prepStockItems() {
-        description = 1;
+        description = 2;
         title = "PURCHASE";
         printDetails.clear();
-        printColumns = new String[]{"Quantity", "0.05", "Description", "0.2"};
+        printColumns = new String[]{"", "0.0", "Quantity", "0.05", "Description", "0.2"};
         for (HeadingLine chl : fc.contractHeadingLine)
             for (Product pr : fc.products) {
                 if (pr.getProductType().equalsIgnoreCase("Brought Out and Stock") &&
                     chl.productID.equalsIgnoreCase(pr.getProductID())) {
-                    printDetails.add(new String[]{"" + chl.quantity, getDesc(pr, chl)});
+                    printDetails.add(new String[]{chl.productID, "" + chl.quantity, getDesc(pr, chl)});
                     break;
                 }
             }
         sumTable = -1;
-        printDetails = sort(1, printDetails);
-        printDetails = sumDupes(printDetails, new int[]{1}, new int[]{0});
+        printDetails = sort(2, printDetails);
+        printDetails = sumDupes(printDetails, new int[]{0, 2}, new int[]{1});
         return printDetails.size() != 0;
     }
 
     public boolean prepSkilled() {
-        description = 1;
+        description = 2;
         title = "SKILLED";
         printDetails.clear();
-        printColumns = new String[]{"Quantity", "0.05", "Description", "0.2", "Make Time", "0.75"};
+        printColumns = new String[]{"", "0.0", "Quantity", "0.05", "Description", "0.2", "Make Time", "0.75"};
         for (ContractHeading ch : fc.contractHeadings) {
             for (HeadingLine chl : fc.contractHeadingLine) {
                 if (ch.headingID == chl.headingID) {
                     for (Product pr : fc.products) {
                         if (chl.productID.equalsIgnoreCase(pr.getProductID())) {
                             if (pr.getSkilled()) {
-                                printDetails.add(new String[]{"" + chl.quantity, getDesc(pr, chl), df.format(
+                                printDetails.add(new String[]{chl.productID,
+                                        "" + chl.quantity, getDesc(pr, chl), df.format(
                                         pr.getMakeTime() * chl.quantity)});
                                 break;
                             }
@@ -693,56 +707,56 @@ public class Printer implements Printable, ActionListener {
             }
         }
         sumName = "Make Time:";
-        sumTable = 2;
-        printDetails = sort(1, printDetails);
-        printDetails = sumDupes(printDetails, new int[]{1}, new int[]{0, 2});
+        sumTable = 3;
+        printDetails = sort(2, printDetails);
+        printDetails = sumDupes(printDetails, new int[]{0, 2}, new int[]{1, 3});
         return printDetails.size() != 0;
     }
 
     public boolean prepPlasma() {
         printDetails.clear();
         title = "PLASMA";
-        description = 1;
-        printColumns = new String[]{"Quantity", "0.05", "Description", "0.2"};
+        description = 2;
+        printColumns = new String[]{"", "0.0", "Quantity", "0.05", "Description", "0.2"};
         for (HeadingLine hl : fc.contractHeadingLine)
             for (Product pr : fc.products)
                 if (pr.getProductID().equalsIgnoreCase(hl.productID)) {
                     if (pr.getProductType().equalsIgnoreCase("SKILLED"))
-                        printDetails.add(new String[]{hl.quantity + "", getDesc(pr, hl)});
+                        printDetails.add(new String[]{hl.productID, hl.quantity + "", getDesc(pr, hl)});
                     break;
                 }
         sumTable = -1;
-        printDetails = sort(1, printDetails);
-        printDetails = sumDupes(printDetails, new int[]{1}, new int[]{0});
+        printDetails = sort(2, printDetails);
+        printDetails = sumDupes(printDetails, new int[]{0, 2}, new int[]{1});
         return printDetails.size() != 0;
     }
 
     public boolean prepPipes() {
-        description = 1;
+        description = 2;
         printDetails.clear();
         title = "PIPES";
-        printColumns = new String[]{"Quantity", "0.05", "Description", "0.2", "Make Time", "0.75"};
+        printColumns = new String[]{"", "0.0", "Quantity", "0.05", "Description", "0.2", "Make Time", "0.75"};
         sumName = "Make Time";
         for (HeadingLine hl : fc.contractHeadingLine)
             for (Product pr : fc.products)
                 if (hl.productID.equalsIgnoreCase(pr.getProductID())) {
                     if (pr.getProductType().equalsIgnoreCase("pipes")) {
-                        printDetails.add(new String[]{
+                        printDetails.add(new String[]{hl.productID,
                                 hl.quantity + "", getDesc(pr, hl), df.format(pr.getMakeTime() * hl.quantity)});
                         break;
                     }
                 }
-        sumTable = 2;
-        printDetails = sort(1, printDetails);
-        printDetails = sumDupes(printDetails, new int[]{1}, new int[]{0, 2});
+        sumTable = 3;
+        printDetails = sort(2, printDetails);
+        printDetails = sumDupes(printDetails, new int[]{0, 2}, new int[]{1, 3});
         return printDetails.size() != 0;
     }
 
     public boolean prepLoading() {
-        description = 1;
+        description = 2;
         printDetails.clear();
         title = "LOADING";
-        printColumns = new String[]{"Quantity", "0.05", "Description", "0.2"};
+        printColumns = new String[]{"", "0.0", "Quantity", "0.05", "Description", "0.2"};
         int items = 0;
         ArrayList<String> cats = new ArrayList<>(0);
         String cCat = "";
@@ -759,7 +773,7 @@ public class Printer implements Printable, ActionListener {
                         }
                         if (cCat.equals(pr.getProductType())) {
                             if (!pr.getProductType().isEmpty() && !pr.getProductType().equalsIgnoreCase("NULL"))
-                                printDetails.add(new String[]{"" + chl.quantity, getDesc(pr, chl)});
+                                printDetails.add(new String[]{chl.productID, "" + chl.quantity, getDesc(pr, chl)});
                             items++;
                         }
                         break;
@@ -770,8 +784,9 @@ public class Printer implements Printable, ActionListener {
         }
         Log.logLine(printDetails.toArray(String[][]::new));
         sumTable = -1;
-        printDetails = sort(1, printDetails);
-        printDetails = sumDupes(printDetails, new int[]{1}, new int[]{0});
+        printDetails = sort(2, printDetails);
+        printDetails = sumDupes(printDetails, new int[]{0, 2}, new int[]{1});
+        printDetails.addAll(calculateClips(true));
         return printDetails.size() != 0;
     }
 
@@ -779,7 +794,7 @@ public class Printer implements Printable, ActionListener {
         description = 1;
         title = "ERECTOR";
         printDetails.clear();
-        printColumns = new String[]{"Quantity", "0.05", "Description", "0.2"};
+        printColumns = new String[]{"", "0.0", "Quantity", "0.05", "Description", "0.2"};
         for (int i = 0;i < fc.contractHeadings.size();i++) {
             printDetails.add(new String[]{fc.contractHeadings.get(i).headingTitle});
             String[][] section = getErectorDetails(fc.contractHeadings.get(i).headingID);
@@ -789,6 +804,125 @@ public class Printer implements Printable, ActionListener {
         sumTable = -1;
         return printDetails.size() != 0;
     }
+
+    public boolean prepNorfab() {
+        description = 1;
+        printDetails.clear();
+        title = "BOUGHT IN NORFAB";
+        printColumns =
+                new String[]{"", "0.0", "Product ID", "0.05", "Quantity", "0.15", "Description", "0.25", "Cost", "0.75"};
+        sumName = "Price";
+        for (HeadingLine hl : fc.contractHeadingLine)
+            for (Product pr : fc.products)
+                if (hl.productID.equalsIgnoreCase(pr.getProductID())) {
+                    if (pr.getProductType().equalsIgnoreCase("BoughtInNorfab")) {
+                        printDetails.add(new String[]{
+                                hl.productID + "",
+                                hl.productID + "", hl.quantity + "", getDesc(pr, hl), df.format(
+                                pr.getSalesCost().doubleValue() * hl.quantity)});
+                        break;
+                    }
+                }
+        sumTable = 4;
+        printDetails = sort(2, printDetails);
+        printDetails = sumDupes(printDetails, new int[]{1, 3}, new int[]{2, 5});
+        printDetails.removeIf(x -> x.length != 5);
+        printDetails.addAll(calculateClips(false));
+        sumType = "MONEY";
+        return printDetails.size() != 0;
+    }
+
+    public ArrayList<String[]> calculateClips(boolean suspension) {
+        ArrayList<String[]> norfabParts = new ArrayList<>();
+        ArrayList<String[]> suspensionParts = new ArrayList<>();
+        for (HeadingLine hl : fc.contractHeadingLine)
+            for (Product pr : fc.products)
+                if (hl.productID.equalsIgnoreCase(pr.getProductID())) {
+                    if (pr.getProductType().equalsIgnoreCase("BoughtInNorfab")) {
+                        if (!pr.getProductID().contains("NN") && !pr.getProductID().contains("NC")) {
+                            norfabParts.add(new String[]{pr.getProductID().split("N")[0], hl.quantity + ""});
+                        }
+                    } else if (pr.getProductType().equalsIgnoreCase("support")) {
+                        suspensionParts.add(new String[]{pr.getProductID().split("S")[0], hl.quantity + ""});
+                    }
+                }
+        ArrayList<int[]> pipeSizes = new ArrayList<>();
+        ArrayList<int[]> supportSizes = new ArrayList<>();
+        ArrayList<int[]> clipSizes = new ArrayList<>();
+        int currentSize;
+        for (String[] strings : norfabParts) {
+            int newVal = Integer.parseInt(strings[0].split("N")[0]);
+            boolean add = true;
+            for (int[] pipeSize : pipeSizes) {
+                if (pipeSize[0] == newVal) {
+                    add = false;
+                    break;
+                }
+            }
+            if (add) {
+                pipeSizes.add(new int[]{newVal, 0});
+                clipSizes.add(new int[]{newVal, 0});
+                supportSizes.add(new int[]{newVal, 0});
+            }
+        }
+        for (String[] detail : norfabParts) {
+            currentSize = -1;
+            if (!detail[0].contains("NN") && !detail[0].contains("NC")) {
+                currentSize = Integer.parseInt(detail[0].split("N")[0]);
+            }
+            for (int[] pipeSize : pipeSizes) {
+                if (pipeSize[0] == currentSize) {
+                    pipeSize[1] += Integer.parseInt(detail[1]);
+                    break;
+                }
+            }
+        }
+        for (String[] printDetail : norfabParts) {
+            currentSize = -1;
+            if (printDetail[0].contains("NC")) {
+                currentSize = Integer.parseInt(printDetail[0].split("N")[0]);
+            }
+            for (int[] clipSize : clipSizes) {
+                if (clipSize[0] == currentSize) {
+                    clipSize[1] += Integer.parseInt(printDetail[1]);
+                    break;
+                }
+            }
+        }
+        for (String[] printDetail : suspensionParts) {
+            currentSize = Integer.parseInt(printDetail[0].split("S")[0]);
+            for (int[] supportSize : supportSizes) {
+                if (supportSize[0] == currentSize) supportSize[1] += Integer.parseInt(printDetail[1]);
+            }
+        }
+
+        String[] printPositions = new String[printColumns.length / 2];
+        int printPos = description;
+        Arrays.fill(printPositions, "---");
+        ArrayList<String[]> returnString = new ArrayList<>();
+        returnString.add(new String[]{"CLIPS SELECTED & PROVIDED"});
+        for (int i = 0;i < pipeSizes.size();i++) {
+            printPositions[printPos] = (pipeSizes.get(i)[1] - 1) + " " + pipeSizes.get(i)[0] +
+                                       "mm clips are recommended. Currently you have " + clipSizes.get(i)[1];
+            returnString.add(printPositions.clone());
+        }
+        if (returnString.size() == 1) returnString.remove(0);
+        if (suspension) {
+            returnString.add(new String[]{"SUSPENSION BANDS"});
+            for (int i = 0;i < supportSizes.size();i++) {
+                printPositions[printPos] = ((pipeSizes.get(i)[1] + 2) / 3) + " " + pipeSizes.get(i)[0] +
+                                           "mm suspension bands are recommended. Currently you have " +
+                                           supportSizes.get(i)[1];
+                returnString.add(printPositions.clone());
+            }
+            if (supportSizes.size() == 0) returnString.remove(returnString.size() - 1);
+        }
+
+        return returnString;
+    }
+
+    public int length() {return title.length();}
+
 
     public ArrayList<String[]> sumDupes(ArrayList<String[]> entry, int[] checks, int[] sums) {
         ArrayList<String[]> finalString = new ArrayList<>(10);
@@ -879,7 +1013,7 @@ public class Printer implements Printable, ActionListener {
             try {
                 if (engineersCopy.isSelected() || bends.isSelected() || stockItems.isSelected() ||
                     skilled.isSelected() || plasma.isSelected() || pipes.isSelected() || loading.isSelected() ||
-                    erector.isSelected()) {
+                    erector.isSelected() || norfab.isSelected()) {
                     multiPrint = false;
                     if (engineersCopy.isSelected()) {
                         if (prepEngies()) {
@@ -961,6 +1095,16 @@ public class Printer implements Printable, ActionListener {
                             } else job.print();
                         } else JOptionPane.showMessageDialog(null, "Erector print list is empty.");
                     }
+                    if (norfab.isSelected()) {
+                        if (prepNorfab()) {
+                            if (!multiPrint) {
+                                if (job.printDialog()) {
+                                    multiPrint = true;
+                                    job.print();
+                                }
+                            } else job.print();
+                        } else JOptionPane.showMessageDialog(null, "Norfab print list is empty.");
+                    }
                 }
                 printTypes.setVisible(false);
             } catch (PrinterException printerException) {
@@ -1012,16 +1156,16 @@ public class Printer implements Printable, ActionListener {
         ArrayList<String[]> section = new ArrayList<>();
         ArrayList<String[]> returnValues = new ArrayList<>();
         String title = "";
-        for (int i = 0;i < values.size();i++) {
-            if (values.get(i).length == 1) {
+        for (String[] value : values) {
+            if (value.length == 1) {
                 if (section.size() > 0) {
                     returnValues.add(new String[]{title});
                     returnValues.addAll(_sort(sortColumn, section));
                 }
-                title = values.get(i)[0];
+                title = value[0];
                 section.clear();
             } else {
-                section.add(values.get(i));
+                section.add(value);
             }
         }
         if (section.size() > 0) {
@@ -1033,8 +1177,6 @@ public class Printer implements Printable, ActionListener {
 
     public ArrayList<String[]> _sort(int sortColum, ArrayList<String[]> values) {
         int[] valuePositions = new int[values.size()];
-        int numEnd = 0;
-        boolean end;
         int pointer = 0;
         for (int i = 0;i < values.size();i++) {
             while (pointer < values.get(i)[sortColum].length() &&
@@ -1045,7 +1187,6 @@ public class Printer implements Printable, ActionListener {
                 valuePositions[i] = (int) Convert.getIfNumeric(values.get(i)[sortColum].substring(0, pointer));
             }
         }
-        boolean move = false;
         int l;
         int temp;
         String[] temp2;
@@ -1066,7 +1207,6 @@ public class Printer implements Printable, ActionListener {
         return values;
     }
 
-
     public void setAllPrints(Boolean x) {
         engineersCopy.setSelected(x);
         bends.setSelected(x);
@@ -1076,6 +1216,7 @@ public class Printer implements Printable, ActionListener {
         pipes.setSelected(x);
         loading.setSelected(x);
         erector.setSelected(x);
+        norfab.setSelected(x);
     }
 
 }
