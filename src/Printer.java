@@ -413,7 +413,7 @@ public class Printer implements Printable, ActionListener {
                             else cost = "£--";
 
 
-                            returnValue.add(new String[]{
+                            returnValue.add(new String[]{"",
                                     "" + contractHeadingLine.quantity, contractHeadingLine.comment, "-", cost});
                         }
                 } else for (Product products : fc.products)
