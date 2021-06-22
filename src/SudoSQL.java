@@ -93,24 +93,9 @@ public class SudoSQL {
         FileManager.checkFile(f.getPath());
         for(String line : new FileManager(filePath).readFile("\\Tables\\Product.txt")){
                 String[] data = line.split("~~");
-                products.add(new Product(data[0], data[1], Convert.getIfNumeric(data[3]),
-                         Convert.getIfNumeric(data[4]),
-                                         Convert.getIfNumeric(data[5]), Convert.getIfNumeric(data[6]),
+                products.add(new Product(data[0], data[1],
                                          Convert.getIfNumeric(data[7].replaceAll("£", "")),
-                        Convert.getIfNumeric(data[8]),
-                                         data[9],
-                                         Convert.getBoolean(data[10]), Convert.getBoolean(data[11]),
-                                         Convert.getBoolean(data[12]), Convert.getBoolean(data[13]),
-                                         Convert.getBoolean(data[14]), Convert.getBoolean(data[15]),
-                                         Convert.getBoolean(data[16]), Convert.getBoolean(data[17]),
-                                         Convert.getBoolean(data[18]), Convert.getBoolean(data[19]),
-                                         Convert.getBoolean(data[20]), Convert.getBoolean(data[21]),
-                                         Convert.getBoolean(data[22]), Convert.getBoolean(data[23]),
-                                         Convert.getBoolean(data[24]), Convert.getBoolean(data[25]),
-                                         Convert.getBoolean(data[26]), Convert.getBoolean(data[27]),
-                                         Convert.getBoolean(data[28]), Convert.getBoolean(data[29]),
-                                         Convert.getBoolean(data[30]),
-                        Convert.getBoolean(data[31]), Convert.getBoolean(data[32])));
+                                         data[9], Convert.getBoolean(data[10]), Convert.getIfNumeric(data[4])));
             }
         Log.logLine("Loading products (" + products.size() + ")");
         return products.toArray(Product[]::new);
