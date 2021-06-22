@@ -94,7 +94,7 @@ public class SudoSQL {
         for(String line : new FileManager(filePath).readFile("\\Tables\\Product.txt")){
                 String[] data = line.split("~~");
                 products.add(new Product(data[0], data[1],
-                                         Convert.getIfNumeric(data[7].replaceAll("£", "")),
+                                         Convert.getIfNumeric(data[3].replaceAll("£", "")),
                                          data[9], Convert.getBoolean(data[10]), Convert.getIfNumeric(data[4])));
             }
         Log.logLine("Loading products (" + products.size() + ")");
