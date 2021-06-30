@@ -519,10 +519,12 @@ public class UI extends JPanel implements ActionListener, WindowListener {
 
     public void getContract(String contractID) {
         fullContract.purge();
-        for (Contract contract : contracts)
+        for (Contract contract : contracts) {
             if (contract.contractID.equals(contractID)) {
                 fullContract = SudoSQL.getContract(contract, contractHeadings, headingLines, products, qProducts);
+                break;
             }
+        }
         ci.setContractDetails(fullContract);
         ci.showMenu();
     }
@@ -710,6 +712,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         Log.logLine("Window Closed");
         if (e.getSource().equals(sp.frame)) if (sp.getSelectedFile()) {
             Log.logLine("Loading selected File");
+            Log.logLine(sp.getContractID());
             getContract(sp.getContractID());
         }
     }

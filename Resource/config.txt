@@ -1,8 +1,8 @@
-version=1.8.5.6
+version=1.8.5.7
 log=0
 testing=0
 offlineMode=0
-logOnCrash=1
+logOnCrash=0
 crashCount=0
 productCrash=0
 contractCrash=0

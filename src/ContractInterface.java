@@ -660,7 +660,7 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
                 } else if (quote.isSelected()) {
                     if (cn.startsWith("Q") || cn.startsWith("q")) {
                         cn = cn.substring(1);
-                        fullContract.details.contractID = cn;
+                        fullContract.details.contractID = cn += "Q";
                     }
                 } else if (cn.length() < 5) {
                     su = false;

@@ -121,14 +121,13 @@ public class SudoSQL {
         Log.logLine("Loading Heading Lines");
         URI f = new File(filePath + "\\Tables\\headingLine.txt").toURI();
         FileManager.checkFile(f.getPath());
-        ArrayList<HeadingLine> hl = null;
-        try{
-            hl =
-                    Files.lines(Paths.get(f)).map(line -> line.split("~~")).map(data -> new HeadingLine((int) Convert.getIfNumeric(data[0]), (int) Convert.getIfNumeric(data[1]), data[2], data[3],
-                                                                                                        (int) Convert.getIfNumeric(data[5]))).collect(
-                            Collectors.toCollection(() -> new ArrayList<>(0)));
-        }catch(Exception ignore){}
-        assert hl != null;
+        ArrayList<HeadingLine> hl = new ArrayList<>();
+        for(String line : new FileManager(filePath).readFile("\\Tables\\headingLine.txt")){
+            String[] data = line.split("~~");
+            Log.logLine(data);
+            hl.add(new HeadingLine((int) Convert.getIfNumeric(data[0]), (int) Convert.getIfNumeric(data[1]), data[2], data[3],
+                    (int) Convert.getIfNumeric(data[5])));
+        }
         return hl.toArray(HeadingLine[]::new);
     }
 
