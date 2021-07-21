@@ -656,16 +656,13 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
 
             case "Save": {
                 boolean su = true;
+                if(quote.isSelected())
+                    if(!contractNumber.getText().endsWith("Q")) contractNumber.setText(contractNumber.getText() + "Q");
                 updateContract();
                 String cn = fullContract.details.contractID;
                 if (cn.isEmpty()) {
                     su = false;
                     JOptionPane.showMessageDialog(frame, "No contractID provided");
-                } else if (quote.isSelected()) {
-                    if (cn.startsWith("Q") || cn.startsWith("q")) {
-                        cn = cn.substring(1);
-                        fullContract.details.contractID = cn += "Q";
-                    }
                 } else if (cn.length() < 5) {
                     su = false;
                     JOptionPane.showMessageDialog(frame, "ContractID must be 5 numeric digits");
