@@ -77,7 +77,10 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
         address2.setToolTipText("Address line 2");
         address3.setToolTipText("Address line 3");
         postcode.setToolTipText("Postcode");
-        quote.setSelected(true);
+        if(!issued)
+            quote.setSelected(true);
+        else
+            quote.setSelected(false);
 
         Container contractBox = new Container();
         contractBox.setLayout(new BoxLayout(contractBox, BoxLayout.X_AXIS));
@@ -273,7 +276,8 @@ public class ContractInterface extends JPanel implements ActionListener, KeyList
     public void checkSave(){
         int option = 1;
         if(!saved)
-            option = (JOptionPane.showOptionDialog(null, "Contract may not of been saved. Save program?", "Save",
+            if(!issued)
+                option = (JOptionPane.showOptionDialog(null, "Contract may not of been saved. Save program?", "Save",
                     JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE, null, new String[]{"Save", "Don't" +
                                                                                                        " " + "save"}, "Save"));
         if(option == 0)

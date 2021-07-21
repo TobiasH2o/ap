@@ -6,19 +6,19 @@ public class Product {
 
     private final String productID;
     private final String description;
+    private final double makeTime;
     private final BigDecimal salesCost;
     private final String productType;
-    private final boolean skilled;
-    private final double makeTime;
+    private final Boolean skilled;
 
-
-    public Product(String productID, String description, double salesCost, String productType, boolean skilled, double makeTime) {
+    public Product(String productID, String description, double salesCost, double makeTime,
+            String productType, Boolean skilled) {
         this.productID = productID;
         this.description = description;
+        this.makeTime = makeTime;
         this.salesCost = BigDecimal.valueOf(salesCost);
         this.productType = productType;
         this.skilled = skilled;
-        this.makeTime = makeTime;
     }
 
     public String getProductID() {
@@ -44,5 +44,6 @@ public class Product {
     public Boolean getSkilled() {
         return skilled;
     }
+
 
 }

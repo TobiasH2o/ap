@@ -94,8 +94,9 @@ public class SudoSQL {
         for(String line : new FileManager(filePath).readFile("\\Tables\\Product.txt")){
                 String[] data = line.split("~~");
                 products.add(new Product(data[0], data[1],
-                                         Convert.getIfNumeric(data[3].replaceAll("£", "")),
-                                         data[9], Convert.getBoolean(data[10]), Convert.getIfNumeric(data[4])));
+                                         Convert.getIfNumeric(data[7].replaceAll("£", "")),
+                                         Convert.getIfNumeric(data[9]), data[10],
+                        Convert.getBoolean(data[4])));
             }
         Log.logLine("Loading products (" + products.size() + ")");
         return products.toArray(Product[]::new);
@@ -121,13 +122,14 @@ public class SudoSQL {
         Log.logLine("Loading Heading Lines");
         URI f = new File(filePath + "\\Tables\\headingLine.txt").toURI();
         FileManager.checkFile(f.getPath());
-        ArrayList<HeadingLine> hl = new ArrayList<>();
-        for(String line : new FileManager(filePath).readFile("\\Tables\\headingLine.txt")){
-            String[] data = line.split("~~");
-            Log.logLine(data);
-            hl.add(new HeadingLine((int) Convert.getIfNumeric(data[0]), (int) Convert.getIfNumeric(data[1]), data[2], data[3],
-                    (int) Convert.getIfNumeric(data[5])));
-        }
+        ArrayList<HeadingLine> hl = null;
+        try{
+            hl =
+                    Files.lines(Paths.get(f)).map(line -> line.split("~~")).map(data -> new HeadingLine((int) Convert.getIfNumeric(data[0]), (int) Convert.getIfNumeric(data[1]), data[2], data[3],
+                                                                                                        (int) Convert.getIfNumeric(data[5]))).collect(
+                            Collectors.toCollection(() -> new ArrayList<>(0)));
+        }catch(Exception ignore){}
+        assert hl != null;
         return hl.toArray(HeadingLine[]::new);
     }
 
