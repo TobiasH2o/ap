@@ -1,5 +1,5 @@
-version=1.9.0.0
-log=0
+version=1.9.0.4
+log=1
 testing=0
 offlineMode=0
 logOnCrash=0

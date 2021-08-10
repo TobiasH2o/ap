@@ -34,7 +34,6 @@ public class Contract {
         this.engineer = engineer;
         this.quote = quote;
         this.issued = issued;
-        System.out.println("Contract(Full) Contractor: " + contractor);
         this.contractor = contractor;
     }
 

@@ -7,6 +7,7 @@ import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class FileManager {
@@ -37,7 +38,8 @@ public class FileManager {
         }
         File[] files = new File[]{new File(filePath + "\\Data\\"), new File(filePath + "\\Tables\\"),
                 new File(filePath + "\\Data\\Contracts\\"), new File(filePath + "\\errorLogs\\"),
-                new File(filePath + "\\Data\\Backup\\")};
+                new File(filePath + "\\Data\\Backup\\"),
+        new File(filePath + "\\debugInfo\\")};
         for(File f1 : files){
             if (!f1.exists() || !f1.isDirectory()) {
                 Log.logLine("Making Directory " + f1.getName());
@@ -57,6 +59,8 @@ public class FileManager {
                 if (!f.createNewFile()) JOptionPane
                         .showMessageDialog(null, "Failed to create required file:\n" + f.getAbsolutePath(),
                                 "CRITICAL ERROR", JOptionPane.WARNING_MESSAGE);
+                else
+                    Log.logLine("Created new file");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -255,9 +259,6 @@ public class FileManager {
         File[] allContent = f.listFiles();
         if (allContent != null) for (File f1 : allContent)
             _deleteDir(f1);
-        if(!f.delete())
-            JOptionPane.showMessageDialog(null, "Failed to remove file:\n" + f.getAbsolutePath(),
-                    "MINOR ERROR", JOptionPane.WARNING_MESSAGE);
     }
 
     public boolean configBoolean(String entry) {
@@ -294,5 +295,6 @@ public class FileManager {
         }
         return "0";
     }
+
 
 }

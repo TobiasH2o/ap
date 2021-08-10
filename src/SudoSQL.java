@@ -1,6 +1,9 @@
 import components.*;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.Reader;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -13,7 +16,7 @@ public class SudoSQL {
 
 
     public static FullContract getContract(Contract contract, ContractHeading[] contractHeadings,
-                                           HeadingLine[] headingLines, Product[] products, Qproduct[] qproducts){
+            HeadingLine[] headingLines, Product[] products, Qproduct[] qproducts) {
         FullContract fc = new FullContract();
         fc.setDetails(contract);
         Log.logLine("SudoSQL-Contractor " + contract.contractor);
@@ -31,9 +34,9 @@ public class SudoSQL {
                         for (Product product : products)
                             if (headingLine.productID.equals(product.getProductID())) {
                                 fc.addProduct(product);
-                                if(product.getProductID().equals("QP") || product.getProductID().equals("QL"))
-                                    for(Qproduct q : qproducts)
-                                        if(q.headingLineID == headingLine.headingLineID)
+                                if (product.getProductID().equals("QP") || product.getProductID().equals("QL"))
+                                    for (Qproduct q : qproducts)
+                                        if (q.headingLineID == headingLine.headingLineID)
                                             fc.addQProduct(q.headingLineID, q.cost.doubleValue(), q.type);
                             }
                     }
@@ -49,9 +52,8 @@ public class SudoSQL {
         try {
             contracts = Files.lines(Paths.get(f)).map(line -> line.split("~~"))
                     .map(data -> new Contract(data[0], Convert.getIfDate(data[1]), data[2], data[3], data[4], data[5],
-                                              data[6], data[7], Convert.getIfDate(data[8]),
-                                              Convert.getBoolean(data[9]),
-                                              data[11], Convert.getBoolean(data[10]), data[12]))
+                            data[6], data[7], Convert.getIfDate(data[8]), Convert.getBoolean(data[9]), data[11],
+                            Convert.getBoolean(data[10]), data[12]))
                     .collect(Collectors.toCollection(() -> new ArrayList<>(0)));
         } catch (Exception ignore) {}
         Log.logLine("Loaded contracts");
@@ -71,16 +73,15 @@ public class SudoSQL {
         return engineers.toArray(String[]::new);
     }
 
-    public static Qproduct[] getQproducts(String filePath){
+    public static Qproduct[] getQproducts(String filePath) {
         URI f;
         ArrayList<Qproduct> qproducts = new ArrayList<>(0);
         f = new File(filePath + "\\Tables\\qProduct.txt").toURI();
         FileManager.checkFile(f.getPath());
-        for(String line : new FileManager(filePath).readFile("\\Tables\\qProduct.txt")){
+        for (String line : new FileManager(filePath).readFile("\\Tables\\qProduct.txt")) {
             String[] data = line.split("~~");
             qproducts.add(new Qproduct((int) Convert.getIfNumeric(data[0]), (int) Convert.getIfNumeric(data[1]),
-                                       Convert.getIfNumeric(data[2]),
-                          data[3]));
+                    Convert.getIfNumeric(data[2]), data[3]));
         }
         Log.logLine("Loading qProducts (" + qproducts.size() + ")");
         return qproducts.toArray(Qproduct[]::new);
@@ -91,13 +92,11 @@ public class SudoSQL {
         ArrayList<Product> products = new ArrayList<>(0);
         f = new File(filePath + "\\Tables\\Product.txt").toURI();
         FileManager.checkFile(f.getPath());
-        for(String line : new FileManager(filePath).readFile("\\Tables\\Product.txt")){
-                String[] data = line.split("~~");
-                products.add(new Product(data[0], data[1],
-                                         Convert.getIfNumeric(data[7].replaceAll("£", "")),
-                                         Convert.getIfNumeric(data[9]), data[10],
-                        Convert.getBoolean(data[4])));
-            }
+        for (String line : new FileManager(filePath).readFile("\\Tables\\Product.txt")) {
+            String[] data = line.split("~~");
+            products.add(new Product(data[0], data[1], Convert.getIfNumeric(data[7].replaceAll("£", "")),
+                    Convert.getIfNumeric(data[9]), data[10], Convert.getBoolean(data[4])));
+        }
         Log.logLine("Loading products (" + products.size() + ")");
         return products.toArray(Product[]::new);
     }
@@ -118,18 +117,25 @@ public class SudoSQL {
         return ch.toArray(ContractHeading[]::new);
     }
 
-    static public HeadingLine[] getHeadingLines(String filePath){
+    static public HeadingLine[] getHeadingLines(String filePath) {
         Log.logLine("Loading Heading Lines");
-        URI f = new File(filePath + "\\Tables\\headingLine.txt").toURI();
+        File f = new File(filePath + "\\Tables\\headingLine.txt");
         FileManager.checkFile(f.getPath());
-        ArrayList<HeadingLine> hl = null;
-        try{
-            hl =
-                    Files.lines(Paths.get(f)).map(line -> line.split("~~")).map(data -> new HeadingLine((int) Convert.getIfNumeric(data[0]), (int) Convert.getIfNumeric(data[1]), data[2], data[3],
-                                                                                                        (int) Convert.getIfNumeric(data[5]))).collect(
-                            Collectors.toCollection(() -> new ArrayList<>(0)));
-        }catch(Exception ignore){}
-        assert hl != null;
+        ArrayList<HeadingLine> hl = new ArrayList<>();
+        try {
+            Reader r = new FileReader(f);
+            BufferedReader br = new BufferedReader(r);
+            String data = br.readLine();;
+            String[] dat;
+            while (!data.isBlank()) {
+                dat = data.split("~~");
+                hl.add(new HeadingLine((int) Convert.getIfNumeric(dat[0]), (int) Convert.getIfNumeric(dat[1]), dat[2],
+                        dat[3], (int) Convert.getIfNumeric(dat[5])));
+                data = br.readLine();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return hl.toArray(HeadingLine[]::new);
     }
 

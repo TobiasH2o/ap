@@ -6,6 +6,7 @@ import components.Qproduct;
 import java.sql.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 
 public class SQLInterface {
@@ -19,6 +20,14 @@ public class SQLInterface {
         IP = ip;
         USERNAME = username;
         PASSWORD = password;
+    }
+
+    public String[] getTableNames() {
+        String[][] tables = sendQuery("SHOW TABLES");
+        ArrayList<String> names = new ArrayList<>();
+        for (String[] tableName : tables)
+            names.addAll(Arrays.asList(tableName));
+        return names.toArray(String[]::new);
     }
 
     public boolean contractExists(String contractID) {
@@ -233,8 +242,7 @@ public class SQLInterface {
     public String check(String s) {
         for (String a : illegalCharacters)
             s = s.replaceAll(a, "");
-        if (s.isEmpty())
-            s = "No Title";
+        if (s.isEmpty()) s = "No Title";
         return s;
     }
 

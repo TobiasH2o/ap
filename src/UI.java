@@ -11,10 +11,12 @@ import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import static javax.swing.BoxLayout.Y_AXIS;
@@ -32,6 +34,7 @@ public class UI extends JPanel implements ActionListener, WindowListener {
     private final JButton submit = new JButton("Load local data");
     private final JButton makeContract = new JButton("Contract Interface");
     private final JButton searchContract = new JButton("Search Orders");
+    private final JButton debugData = new JButton("Generate Debug Data");
     // sp allows user to search any loaded contracts
     private final SearchPanel sp = new SearchPanel();
     // Used to load and save files
@@ -127,6 +130,10 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         searchContract.setActionCommand("sc");
         searchContract.setFocusPainted(false);
 
+        debugData.addActionListener(this);
+        debugData.setActionCommand("debugDat");
+        debugData.setFocusPainted(false);
+
         makeContract.addActionListener(this);
         makeContract.setActionCommand("makeContract");
         makeContract.setFocusPainted(false);
@@ -150,11 +157,13 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         passwordBox.setText("APENG");
         northBox.add(searchContract);
         northBox.add(makeContract);
+        northBox.add(debugData);
 
         // Disables program functionality until it has loaded local data sources
         usernameBox.setEnabled(false);
         passwordBox.setEnabled(false);
         searchContract.setEnabled(false);
+        debugData.setEnabled(false);
         makeContract.setEnabled(false);
 
         southBox.setLayout(new GridLayout(1, 1));
@@ -529,6 +538,15 @@ public class UI extends JPanel implements ActionListener, WindowListener {
         ci.showMenu();
     }
 
+    public void dumpSQLData(){
+        fm.deleteDir(filePath + "\\debugInfo");
+        String[] tables = sql.getTableNames();
+        FileManager.checkFile(filePath + "\\debugInfo\\tableNames.txt");
+        fm.saveFile("debugInfo\\tableNames.txt", tables, true);
+        for(String name : tables)
+            fm.saveFile("debugInfo\\" + name + ".txt", sql.fetchEntireTable(name));
+    }
+
     public void actionPerformed(ActionEvent e) {
         String event = e.getActionCommand();
 
@@ -597,12 +615,23 @@ public class UI extends JPanel implements ActionListener, WindowListener {
                 syncWithServer();
                 break;
 
+            case "debugDat":
+                try {
+                    dumpSQLData();
+                    ZipUtils.zipFolder(Paths.get(filePath), Paths.get(filePath.split("AppData")[0] + "Desktop" +
+                                                            "\\debugData.zip"));
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
+                break;
+
             //noinspection SpellCheckingInspection
             case "initialsync":
                 // Enables some of the programs functionality
                 usernameBox.setEnabled(true);
                 passwordBox.setEnabled(true);
                 searchContract.setEnabled(true);
+                debugData.setEnabled(true);
                 makeContract.setEnabled(true);
 
                 // Loads data stored locally
